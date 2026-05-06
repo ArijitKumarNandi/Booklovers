@@ -18,8 +18,18 @@ const port = process.env.PORT || 4000 // Define server port
 await connectDB() // Establish connection to the database
 await connectCloudinary() // Setup cloudinary for image storage
 
-// Allow multiple origins
-const allowedOrigins = ['http://localhost:5173', 'https://booklovers-kohl.vercel.app']
+// Allow local development, production, and Vercel preview deployments.
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://booklovers-kohl.vercel.app',
+    process.env.CLIENT_URL
+].filter(Boolean)
+
+const isAllowedOrigin = (origin) => {
+    if(!origin) return true
+    if(allowedOrigins.includes(origin)) return true
+    return /^https:\/\/booklovers-[a-z0-9-]+\.vercel\.app$/i.test(origin)
+}
 
 // STRIPE WEBHOOKS
 app.post('/stripe', express.raw({type: "application/json"}), stripeWebhooks)
@@ -28,7 +38,12 @@ app.post('/stripe', express.raw({type: "application/json"}), stripeWebhooks)
 app.use(express.json()) // Enables JSON request body parsing
 app.use(cookieParser()) // Cookie-parser middleware to parse HTTP request cookies
 app.use(cors({
-    origin:allowedOrigins, // Whitelist of allowed domains
+    origin(origin, callback){
+        if(isAllowedOrigin(origin)){
+            return callback(null, true)
+        }
+        return callback(new Error("Not allowed by CORS"))
+    },
     credentials:true // Require for cookies/authorization headers
 }))
 
