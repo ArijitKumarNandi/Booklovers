@@ -1,6 +1,8 @@
 import {v2 as cloudinary} from "cloudinary"
 import Product from "../models/Product.js"
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
 // CONTROLLER FUNCTION FOR ADDING PRODUCT
 export const addProduct = async (req,res)=>{
     try {
@@ -31,6 +33,32 @@ export const addProduct = async (req,res)=>{
 export const listProduct = async (req,res)=>{
     try {
         const products = await Product.find({})
+        res.json({success:true, products})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
+
+// CONTROLLER FUNCTION FOR RECOMMENDING PRODUCTS BY SEARCH TEXT
+export const recommendProducts = async (req,res)=>{
+    try {
+        const query = req.query.q?.trim()
+
+        if(!query){
+            return res.json({success:true, products:[]})
+        }
+
+        const searchRegex = new RegExp(escapeRegex(query), "i")
+        const products = await Product.find({
+            inStock:true,
+            $or:[
+                {name: searchRegex},
+                {description: searchRegex},
+                {category: searchRegex}
+            ]
+        }).limit(20)
+
         res.json({success:true, products})
     } catch (error) {
         console.log(error.message)
