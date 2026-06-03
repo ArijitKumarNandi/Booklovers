@@ -9,15 +9,15 @@ const Navbar = ({containerStyles, setMenuOpened}) => {
     {to: "/shop", label: "Shop", icon: <IoLibraryOutline />},
     {to: "/recommendations", label: "Recommend", icon: <IoSparklesOutline />},
     {to: "/blog", label: "Blog", icon: <TbBrandBlogger />},
-    {to: "mailto:infobooklovers.com", label: "Contact", icon: <PiEnvelopeDuotone />},
+    {to: "/contact", label: "Contact", icon: <PiEnvelopeDuotone />},
   ]
   return (
     <nav className={containerStyles}>
       {navItems.map(({to, label, icon})=>(
         <div key={label}>
-          <NavLink onClick={()=>setMenuOpened(false)} to={to} className={({isActive})=>`${isActive ? "bg-white ring-1 ring-slate-900/10" : ""} flexCenter gap-x-2 px-3 py-1.5 rounded-full`} >
+          <NavLink onClick={()=>setMenuOpened(false)} to={to} className={({isActive})=>`${isActive ? "surface-card ring-1 ring-slate-900/10" : ""} flexCenter gap-x-2 lg:gap-x-1.5 px-3 lg:px-3 py-1.5 lg:py-1.5 rounded-full`} >
             <span className='text-xl'>{icon}</span>
-            <span className='medium-16'>{label}</span>
+            <span className='medium-16 lg:medium-15 xl:medium-16'>{label}</span>
           </NavLink>
 
         </div>

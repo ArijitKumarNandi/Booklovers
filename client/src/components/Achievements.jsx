@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Title from './Title';
 import { RiSecurePaymentLine, RiSoundModuleLine } from 'react-icons/ri';
 import { FaUsersLine } from 'react-icons/fa6';
@@ -15,7 +15,7 @@ const Achievements = () => {
       {/* CONTAINER */}
       <div className='flex flex-col xl:flex-row gap-12'>
         {/* LEFT SIDE */}
-        <div className='flex-[2] flex justify-center flex-col bg-gradient-to-l from-tertiary/40 to-white px-6 lg:px-12 py-16'>
+        <div className='theme-journey-gradient flex-[2] flex justify-center flex-col px-6 lg:px-12 py-16'>
           <h2 className='h2'>Our Journey So Far</h2>
           <p className='py-5 max-w-[47rem]'>From a small idea to a growing library, our journey has been fueled by a love for stories, knowledge, and the joy of sharing books with readers from all walks of life.</p>
           {/* STATISTICS CONTAINER */}

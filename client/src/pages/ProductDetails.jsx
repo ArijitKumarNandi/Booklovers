@@ -1,28 +1,65 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import { Link, useParams } from 'react-router-dom'
-import { TbStarFilled, TbStarHalfFilled, TbShoppingBagPlus, TbHeart } from 'react-icons/tb'
+import { TbStarFilled, TbStarHalfFilled, TbShoppingBagPlus, TbHeart, TbShare3 } from 'react-icons/tb'
 import { FaTruckFast } from 'react-icons/fa6'
+import toast from 'react-hot-toast'
 import ProductDescription from '../components/ProductDescription'
 import ProductFeatures from '../components/ProductFeatures'
 import RelatedBooks from '../components/RelatedBooks'
 
+const getWishlist = () => {
+  try {
+    return JSON.parse(localStorage.getItem('booklovers-wishlist')) ?? []
+  } catch {
+    return []
+  }
+}
+
 const ProductDetails = () => {
-  const {books, currency, addToCart, cartItems} = useContext(ShopContext)
+  const {books, currency, addToCart} = useContext(ShopContext)
   const {id} = useParams()
   const book = books.find((b)=> b._id === id)
-  const [image, setImage] = useState(null)
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [wishlist, setWishlist] = useState(getWishlist)
+  const image = selectedImage?.bookId === id ? selectedImage.src : book?.image[0]
+  const isWishlisted = wishlist.includes(id)
+
+  const toggleWishlist = () => {
+    const updatedWishlist = isWishlisted
+      ? wishlist.filter((bookId) => bookId !== id)
+      : [...wishlist, id]
+
+    setWishlist(updatedWishlist)
+    localStorage.setItem('booklovers-wishlist', JSON.stringify(updatedWishlist))
+    toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist')
+  }
+
+  const copyPageUrl = async () => {
+    const pageUrl = window.location.href
+
+    try {
+      await navigator.clipboard.writeText(pageUrl)
+      toast.success('Book link copied')
+    } catch {
+      const textArea = document.createElement('textarea')
+      textArea.value = pageUrl
+      textArea.style.position = 'fixed'
+      textArea.style.opacity = '0'
+      document.body.appendChild(textArea)
+      textArea.select()
+
+      const copied = document.execCommand('copy')
+      document.body.removeChild(textArea)
+      copied ? toast.success('Book link copied') : toast.error('Unable to copy the book link')
+    }
+  }
 
   useEffect(()=>{
     if(book){
-      setImage(book.image[0])
       window.scrollTo({top: 0, behavior: "smooth"})
     }
   }, [book, id])
-
-  useEffect(()=>{
-    console.log(cartItems)
-  }, [addToCart])
 
   return (
     book && (
@@ -40,7 +77,7 @@ const ProductDetails = () => {
             <div className='flex-1 flexCenter flex-col gap-[7px] flex-wrap'>
               {book.image.map((item, index)=>(
                 <div key={index}>
-                  <img onClick={()=>setImage(item)} src={item} alt="bookImg" className='rounded-lg overflow-hidden'/>
+                  <img onClick={()=>setSelectedImage({ bookId: id, src: item })} src={item} alt="bookImg" className='rounded-lg overflow-hidden'/>
                 </div>
               ))}
             </div>
@@ -68,8 +105,20 @@ const ProductDetails = () => {
             <p className='max-w-[555px]'>{book.description}</p>
             <div className='flex items-center gap-x-4 mt-6'>
               <button onClick={()=>addToCart(book._id)} className="btn-dark sm:w-1/2 flexCenter gap-x-2 capitalize !rounded-md">Add to Cart <TbShoppingBagPlus /></button>
-              <button className='btn-secondary !rounded-md'><TbHeart className="text-xl"/></button>
+              <button
+                type='button'
+                onClick={toggleWishlist}
+                className='btn-secondary !rounded-md'
+                aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                aria-pressed={isWishlisted}
+              >
+                <TbHeart className={`text-xl transition-colors ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+              </button>
             </div>
+            <button onClick={copyPageUrl} className='mt-3 flex items-center gap-x-2 medium-14 text-secondary hover:underline cursor-pointer'>
+              <TbShare3 className='text-lg' />
+              Share this book
+            </button>
             <div className='flex items-center gap-x-2 mt-3'>
               <FaTruckFast className="text-lg"/>
               <span className='medium-14'>Free Delivery on orders over 500$</span>
@@ -82,7 +131,7 @@ const ProductDetails = () => {
             </div>
           </div>
         </div>
-        <ProductDescription />
+        <ProductDescription description={book.description} productId={book._id} />
         <ProductFeatures />
         <RelatedBooks book={book} id={id}/>
       </div>

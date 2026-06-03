@@ -86,6 +86,72 @@ export const isAuth = async (req,res)=>{
     }
 }
 
+// UPDATE USER PROFILE
+export const updateProfile = async (req,res)=>{
+    try {
+        const {userId} = req
+        const {name, email, avatar} = req.body
+
+        if(!name?.trim()){
+            return res.json({success:false, message:"Name is required"})
+        }
+        if(!validator.isEmail(email || "")){
+            return res.json({success:false, message:"Please enter a valid email"})
+        }
+
+        const existingUser = await User.findOne({email, _id: {$ne: userId}})
+        if(existingUser){
+            return res.json({success:false, message:"Email already in use"})
+        }
+
+        const updateData = {
+            name: name.trim(),
+            email,
+        }
+
+        if(typeof avatar === "string"){
+            updateData.avatar = avatar
+        }
+
+        const user = await User.findByIdAndUpdate(userId, updateData, {new:true}).select("-password")
+        return res.json({success:true, message:"Profile updated successfully", user})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
+
+// UPDATE USER PASSWORD
+export const updatePassword = async (req,res)=>{
+    try {
+        const {userId} = req
+        const {currentPassword, newPassword, confirmPassword} = req.body
+
+        if(!currentPassword || !newPassword || !confirmPassword){
+            return res.json({success:false, message:"Please fill all password fields"})
+        }
+        if(newPassword !== confirmPassword){
+            return res.json({success:false, message:"Passwords do not match"})
+        }
+        if(newPassword.length < 8){
+            return res.json({success:false, message:"Please enter a strong password"})
+        }
+
+        const user = await User.findById(userId)
+        const isMatch = await bcrypt.compare(currentPassword, user.password)
+        if(!isMatch){
+            return res.json({success:false, message:"Current password is incorrect"})
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10)
+        await user.save()
+        return res.json({success:true, message:"Password updated successfully"})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
+
 // LOGOUT USER
 export const logout = async (req,res)=>{
     try {

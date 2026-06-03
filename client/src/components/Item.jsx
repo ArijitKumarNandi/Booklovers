@@ -12,7 +12,7 @@ const Item = ({ book, fromHero }) => {
       navigate(`/shop/${book.category}/${book._id}`)
       scrollTo(0, 0)
     }} 
-    className={`overflow-hidden sm:p-4 ${fromHero ? "bg-white" : "sm:bg-primary"} rounded-xl`}>
+    className={`overflow-hidden sm:p-4 ${fromHero ? "surface-card" : "sm:bg-primary"} rounded-xl`}>
       {/* IMAGE */}
       <div className='overflow-hidden rounded-xl shadow-[0px_0px_2px_0px_rgba(0,_0,_0,_0.1)]'>
         <img src={book.image[0]} alt="book.name" className='rounded-lg' />

@@ -6,19 +6,36 @@ const Footer = () => {
   const linkSections = [
     {
       title: 'Quick Links',
-      links: ['Home', 'Best Sellers', 'Offers & Deals', 'Contact Us', 'FAQs'],
+      links: [
+        { label: 'Home', to: '/' },
+        { label: 'Best Sellers', to: '/info/best-sellers' },
+        { label: 'Offers & Deals', to: '/info/offers-deals' },
+        { label: 'Contact Us', to: '/contact' },
+        { label: 'FAQs', to: '/faqs' },
+      ],
     },
     {
       title: 'Need Help?',
-      links: ['Delivery Information', 'Return & Refund Policy', 'Payment Methods', 'Track your Order', 'Contact Us'],
+      links: [
+        { label: 'Delivery Information', to: '/info/delivery-information' },
+        { label: 'Return & Refund Policy', to: '/info/return-refund-policy' },
+        { label: 'Payment Methods', to: '/info/payment-methods' },
+        { label: 'Track your Order', to: '/info/track-your-order' },
+        { label: 'Contact Us', to: '/contact' },
+      ],
     },
     {
       title: 'Follow Us',
-      links: ['Instagram', 'Twitter', 'Facebook', 'Youtube'],
+      links: [
+        { label: 'Instagram', href: 'https://www.instagram.com' },
+        { label: 'Twitter', href: 'https://twitter.com' },
+        { label: 'Facebook', href: 'https://www.facebook.com' },
+        { label: 'Youtube', href: 'https://www.youtube.com' },
+      ],
     },
   ];
   return (
-    <footer className='max-padd-container bg-gradient-to-l from-primary via-white to-primary'>
+    <footer className='theme-footer max-padd-container'>
       <div className='flex flex-col md:flex-row items-start justify-between gap-10 py-10 border-b border-gray-500/30'>
         <div>
           {/* LOGO */}
@@ -43,11 +60,17 @@ const Footer = () => {
                 {section.title}
               </h3>
               <ul className='text-sm space-y-2'>
-                {section.links.map((link, i) => (
-                  <li key={i}>
-                    <a href="#" className='hover:underline transition'>
-                      {link}
-                    </a>
+                {section.links.map((link) => (
+                  <li key={link.label}>
+                    {link.href ? (
+                      <a href={link.href} target='_blank' rel='noreferrer' className='hover:underline transition'>
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link to={link.to} className='hover:underline transition'>
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

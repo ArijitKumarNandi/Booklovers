@@ -10,6 +10,7 @@ import productRouter from "./routes/productRoute.js"
 import cartRouter from "./routes/cartRoute.js"
 import addressRouter from "./routes/addressRoute.js"
 import orderRouter from "./routes/orderRoute.js"
+import reviewRouter from "./routes/reviewRoute.js"
 import { stripeWebhooks } from "./controllers/orderController.js"
 
 const app = express() // Initialize Express Application
@@ -35,7 +36,7 @@ const isAllowedOrigin = (origin) => {
 app.post('/stripe', express.raw({type: "application/json"}), stripeWebhooks)
 
 // Middleware Setup
-app.use(express.json()) // Enables JSON request body parsing
+app.use(express.json({limit: "2mb"})) // Enables JSON request body parsing
 app.use(cookieParser()) // Cookie-parser middleware to parse HTTP request cookies
 app.use(cors({
     origin(origin, callback){
@@ -54,6 +55,7 @@ app.use('/api/product', productRouter) // Routes for product-related operations
 app.use('/api/cart', cartRouter) // Routes for cart-related operations
 app.use('/api/address', addressRouter) // Routes for address-related operations
 app.use('/api/order', orderRouter) // Routes for order-related operations
+app.use('/api/review', reviewRouter) // Routes for book review operations
 
 // Root Endpoint to check API Status
 app.get('/', (req, res)=>{

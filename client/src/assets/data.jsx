@@ -632,44 +632,100 @@ export const dummyAddress = [
 
 export const blogs = [
   {
+    id: "academic-books-2024",
     title: "10 Must-Read Academic Books for 2024",
     category: "Academic",
     image: blog1,
+    excerpt: "Discover books that spark curiosity, deliver quality and bring inspiration to your everyday reading",
+    essay: [
+      "Academic reading works best when it does more than prepare you for an exam. The strongest academic books help readers build habits of attention, question familiar ideas, and connect facts with real-world problems. In 2024, students and lifelong learners are looking for books that explain difficult concepts clearly without making the learning process feel flat.",
+      "A good academic shelf should mix science, history, writing, mathematics, technology, and critical thinking. These books give readers vocabulary for understanding the world and confidence for joining bigger conversations. They also help create a reading routine: a chapter before class, notes after dinner, or a weekend session for deeper study.",
+      "When choosing academic books, look for clear structure, examples, diagrams, and exercises that invite reflection. The goal is not to collect heavy titles, but to find books that make learning feel possible. A carefully chosen academic book can become a quiet mentor, guiding you through complex ideas one page at a time."
+    ],
   },
   {
+    id: "classic-literature-history",
     title: "The Hidden History Behind Classic Literature",
     category: "History",
     image: blog2,
+    excerpt: "Discover books that spark curiosity, deliver quality and bring inspiration to your everyday reading",
+    essay: [
+      "Classic literature often feels timeless, but every classic was written in a specific historical moment. Behind the elegant sentences are wars, social changes, family pressures, publishing battles, and cultural movements that shaped what authors wrote and how readers responded. Understanding that background makes old books feel newly alive.",
+      "A novel about manners may also reveal class anxiety. A poem about nature may respond to industrial change. A tragic love story may carry questions about law, gender, inheritance, and freedom. History does not reduce literature to facts; it gives the story more rooms to explore.",
+      "Reading classics with historical awareness helps readers notice why certain characters had limited choices and why certain conflicts mattered so deeply. It also reminds us that books survive because each generation finds fresh meaning in them. The past remains visible in the margins, waiting for curious readers to look closer."
+    ],
   },
   { 
+    id: "horror-novels-night",
     title: "Top Horror Novels That Will Keep You Up All Night", 
     category: "Horror", 
-    image: blog3 
+    image: blog3,
+    excerpt: "Discover books that spark curiosity, deliver quality and bring inspiration to your everyday reading",
+    essay: [
+      "The best horror novels do not rely only on sudden shocks. They create an atmosphere that follows the reader after the book is closed: a hallway that seems longer than before, a sound outside the window, a memory that returns at the wrong time. Horror is powerful because it turns ordinary spaces into places of uncertainty.",
+      "Great horror also understands emotion. Fear often grows from grief, guilt, loneliness, obsession, or secrets that refuse to stay buried. A haunted house may be frightening, but the people inside it are what make the story matter. Their choices, doubts, and hidden wounds give the terror weight.",
+      "For readers who enjoy suspense, horror offers a strange comfort: it lets us face darkness from a safe chair. Whether the threat is supernatural or human, these novels ask what courage looks like when logic fails. That is why the best ones keep us awake, turning pages long after midnight."
+    ],
   },
   {
+    id: "adventure-books-wanderlust",
     title: "Best Adventure Books to Fuel Your Wanderlust",
     category: "Adventure",
     image: blog4,
+    excerpt: "Discover books that spark curiosity, deliver quality and bring inspiration to your everyday reading",
+    essay: [
+      "Adventure books begin with movement: a map, a ship, a mountain path, a hidden door, or a decision that cannot be undone. They invite readers to leave familiar routines and enter a world where courage is tested by weather, distance, mystery, and danger. That sense of motion is what makes adventure reading so addictive.",
+      "But the strongest adventure stories are not only about reaching a destination. They are about transformation. Characters discover what they value, what they fear, and who they can trust when plans fall apart. The journey outside becomes a journey inward.",
+      "For readers with wanderlust, adventure books offer landscapes before travel is possible and companionship before a trip begins. They remind us that exploration is not just about geography. Sometimes the greatest expedition starts with curiosity and a willingness to step beyond the known."
+    ],
   },
   {
+    id: "business-books-entrepreneurs",
     title: "Business Books Every Entrepreneur Should Read",
     category: "Business",
     image: blog5,
+    excerpt: "Discover books that spark curiosity, deliver quality and bring inspiration to your everyday reading",
+    essay: [
+      "Entrepreneurship demands more than a good idea. It requires judgment, discipline, communication, resilience, and the ability to learn quickly from mistakes. Business books can help founders borrow experience from people who have already tested strategies in the real world.",
+      "The most useful business books explain how to understand customers, build a brand, manage money, negotiate clearly, and lead teams through uncertainty. They do not promise instant success. Instead, they offer frameworks that help entrepreneurs make better decisions when the path is messy.",
+      "A strong business reading habit can sharpen instincts over time. One book may improve pricing. Another may change how you handle meetings. Another may teach you when to say no. For entrepreneurs, reading is not separate from work; it is part of building the mind that builds the company."
+    ],
   },
   {
+    id: "reading-mental-health",
     title: "How Reading Improves Mental Health",
     category: "Health",
     image: blog6,
+    excerpt: "Discover books that spark curiosity, deliver quality and bring inspiration to your everyday reading",
+    essay: [
+      "Reading can become a gentle form of rest in a noisy day. When the mind follows a story or an idea, attention begins to slow down. The page asks for patience, and that patience can create space between a person and their stress.",
+      "Books also help readers feel less alone. A character's struggle, a memoir's honesty, or a thoughtful self-help chapter can give language to emotions that were difficult to name. Naming an experience often makes it easier to carry.",
+      "This does not mean reading replaces professional care when support is needed. But as a daily habit, reading can support mental well-being by improving focus, empathy, imagination, and reflection. Even a few pages can become a small ritual of calm."
+    ],
   },
   {
+    id: "academic-writing-tips",
     title: "Academic Writing Tips from Bestselling Authors",
     category: "Academic",
     image: blog7,
+    excerpt: "Discover books that spark curiosity, deliver quality and bring inspiration to your everyday reading",
+    essay: [
+      "Academic writing becomes stronger when clarity comes before decoration. Bestselling authors often succeed because they respect the reader's attention. They build arguments step by step, choose precise words, and remove anything that distracts from the main idea.",
+      "A useful writing process begins with a clear question. What are you trying to prove, explain, compare, or challenge? Once the question is focused, research becomes easier to organize and paragraphs gain direction. Each paragraph should do a job, not simply fill space.",
+      "Revision is where academic writing improves most. Read sentences aloud, check transitions, define key terms, and make sure evidence supports the claim. Good academic writing is not about sounding complicated. It is about making a thoughtful idea understandable, credible, and worth remembering."
+    ],
   },
   {
+    id: "historical-fiction-past",
     title: "Historical Fiction That Brings the Past to Life",
     category: "History",
     image: blog8,
+    excerpt: "Discover books that spark curiosity, deliver quality and bring inspiration to your everyday reading",
+    essay: [
+      "Historical fiction gives history a heartbeat. Dates and events matter, but stories help readers imagine what it felt like to live through change: the uncertainty before a battle, the quiet fear inside a household, the hope carried by people whose names never reached official records.",
+      "The best historical novels balance research with human feeling. Details about clothing, food, streets, language, and customs create authenticity, but character is what makes the past memorable. Readers return because they care about the people moving through history's pressure.",
+      "This genre can also inspire deeper learning. A powerful novel often sends readers searching for the real events behind the story. In that way, historical fiction becomes a bridge between imagination and knowledge, making the past feel close enough to question and understand."
+    ],
   },
 ];
 
