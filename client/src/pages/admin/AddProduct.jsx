@@ -12,6 +12,47 @@ const AddProduct = () => {
   const [offerPrice, setOfferPrice] = useState("10")
   const [category, setCategory] = useState("Academic")
   const [popular, setPopular] = useState(false)
+  const [aiLoading, setAiLoading] = useState(false)
+
+  const analyzeImageWithAI = async (file)=>{
+    if(!file) return
+
+    if(!file.type.startsWith("image/")){
+      toast.error("Please upload an image file")
+      return
+    }
+
+    setAiLoading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("image", file)
+
+      const {data} = await axios.post("/api/product/analyze-image", formData)
+
+      if(data.success){
+        setName(data.product.name)
+        setDescription(data.product.description)
+        toast.success("AI filled product info")
+      }else{
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
+  const onImageChange = async (event, index)=>{
+    const file = event.target.files[0]
+    if(!file) return
+
+    const updatedFiles = [...files]
+    updatedFiles[index] = file
+    setFiles(updatedFiles)
+    await analyzeImageWithAI(file)
+  }
 
   const onSubmitHandler = async (event)=>{
     event.preventDefault()
@@ -39,6 +80,8 @@ const AddProduct = () => {
         setDescription("");
         setFiles([]);
         setPrice("10");
+        setOfferPrice("10");
+        setPopular(false);
       }else{
         toast.error(data.message)
       }
@@ -84,15 +127,17 @@ const AddProduct = () => {
           </div>
         </div>
         {/* IMAGES */}
-        <div className='flex gap-2 mt-2'>
+        <div className='mt-2'>
+          <div className='flexStart gap-2'>
+            <h5 className="h5">Product Images</h5>
+            {aiLoading && <span className='rounded-full bg-white px-3 py-1 text-xs text-secondary'>AI analyzing image...</span>}
+          </div>
+          <div className='flex gap-2 mt-2'>
           {Array(4).fill("").map((_, index)=>(
             <label key={index} htmlFor={`image${index}`} className='ring-1 ring-slate-900/10 overflow-hidden rounded'>
-              <input onChange={(e) => {
-                const updatedFiles = [...files]
-                updatedFiles[index] = e.target.files[0]
-                setFiles(updatedFiles)
-              }} 
+              <input onChange={(e) => onImageChange(e, index)} 
                 type='file' 
+                accept='image/*'
                 id={`image${index}`} 
                 hidden
                 />
@@ -101,12 +146,13 @@ const AddProduct = () => {
                 } alt="uploadArea" height={67} width={67} className='bg-white overflow-hidden aspect-square object-cover' />
             </label>
           ))}
+          </div>
         </div>
         <div className='flexStart gap-2 my-2'>
           <input onChange={()=>setPopular(prev=>!prev)} checked={popular} type='checkbox' id='popular' />
           <label htmlFor='popular' className='cursor-pointer'>Add to Popular</label>
         </div>
-        <button type="submit" className='btn-dark mt-3 max-w-44 sm:w-full rounded'>Add Product</button>
+        <button type="submit" disabled={aiLoading} className='btn-dark mt-3 max-w-44 sm:w-full rounded disabled:cursor-not-allowed disabled:opacity-60'>{aiLoading ? "Analyzing..." : "Add Product"}</button>
       </form>
     </div>
   )
