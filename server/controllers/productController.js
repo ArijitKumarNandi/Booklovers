@@ -5,12 +5,38 @@ import Product from "../models/Product.js"
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
 const parseAiProductInfo = (text) => {
+    const cleanText = text?.replace(/```(?:json)?|```/gi, "").trim()
+
+    if(!cleanText){
+        throw new Error("AI could not read product details from this image")
+    }
+
     try {
-        return JSON.parse(text)
+        return JSON.parse(cleanText)
     } catch (error) {
-        const jsonMatch = text?.match(/\{[\s\S]*\}/)
-        if(!jsonMatch) throw error
-        return JSON.parse(jsonMatch[0])
+        const jsonMatch = cleanText?.match(/\{[\s\S]*\}/)
+
+        if(jsonMatch){
+            const jsonText = jsonMatch[0]
+            try {
+                return JSON.parse(jsonText)
+            } catch {
+                const normalizedJson = jsonText
+                    .replace(/([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)/g, '$1"$2"$3')
+                    .replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (_, value) => `"${value.replace(/"/g, '\\"')}"`)
+
+                return JSON.parse(normalizedJson)
+            }
+        }
+
+        const name = cleanText.match(/(?:name|title)\s*:\s*(.+)/i)?.[1]?.trim()
+        const description = cleanText.match(/description\s*:\s*([\s\S]+)/i)?.[1]?.trim()
+
+        if(name && description){
+            return { name, description }
+        }
+
+        throw new Error("AI could not read product details from this image")
     }
 }
 
@@ -51,7 +77,7 @@ export const analyzeProductImage = async (req,res)=>{
                         role: "user",
                         parts: [
                             {
-                                text: "Analyze this bookstore product image. Return only valid JSON with two string fields: name and description. If this is a book cover, use the visible book title as the product name. Write a natural ecommerce description in 2-3 sentences for a book store. Do not include price, markdown, or extra keys."
+                                text: "Read this bookstore product image and identify the product. Use the visible book title as the name when possible. Return only the requested JSON fields. The description must be 2-3 natural ecommerce sentences for a book store."
                             },
                             {
                                 inline_data: {
@@ -64,7 +90,15 @@ export const analyzeProductImage = async (req,res)=>{
                 ],
                 generationConfig: {
                     responseMimeType: "application/json",
-                    maxOutputTokens: 350
+                    responseSchema: {
+                        type: "object",
+                        properties: {
+                            name: { type: "string" },
+                            description: { type: "string" }
+                        },
+                        required: ["name", "description"]
+                    },
+                    maxOutputTokens: 500
                 }
             })
         })
