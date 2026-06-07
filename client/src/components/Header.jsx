@@ -5,6 +5,7 @@ import userImg from '../assets/user.png';
 import {FaBars, FaBarsStaggered} from "react-icons/fa6";
 import {FaSearch} from "react-icons/fa";
 import {RiUserLine} from "react-icons/ri";
+import { FiBell, FiBox, FiLogOut, FiStar, FiUser } from 'react-icons/fi'
 import Navbar from "./Navbar";
 import { ShopContext } from '../context/ShopContext';
 import ThemeSelector from './ThemeSelector';
@@ -80,10 +81,16 @@ const Header = () => {
           </div>
           {/* DROPDOWN */}
           {user &&
-          (<ul className="surface-card p-2 w-32 ring-1 ring-slate-900/5 rounded absolute right-0 top-10 hidden group-hover:flex flex-col medium-14 shadow-md z-50">
-            <li onClick={()=>navigate('/profile')} className="p-2 rounded-md hover:bg-primary cursor-pointer">Profile</li>
-            <li onClick={()=>navigate('/my-orders')} className="p-2 rounded-md hover:bg-primary cursor-pointer">Orders</li>
-            <li onClick={logoutUser} className="p-2 rounded-md hover:bg-primary cursor-pointer">Logout</li>
+          (<ul className="surface-card absolute right-0 top-12 z-50 hidden w-56 flex-col rounded-xl p-2 medium-14 shadow-xl ring-1 ring-slate-900/10 group-hover:flex">
+            <li className='border-b border-[var(--theme-border)] px-3 py-2'>
+              <p className='medium-14 !text-inherit line-clamp-1'>{user.name}</p>
+              <p className='text-xs line-clamp-1'>{user.email}</p>
+            </li>
+            <li onClick={()=>navigate('/profile')} className="flex items-center gap-3 rounded-lg p-3 hover:bg-primary cursor-pointer"><FiUser />Profile</li>
+            <li onClick={()=>navigate('/my-orders')} className="flex items-center gap-3 rounded-lg p-3 hover:bg-primary cursor-pointer"><FiBox />Orders</li>
+            <li onClick={()=>navigate('/my-reviews')} className="flex items-center gap-3 rounded-lg p-3 hover:bg-primary cursor-pointer"><FiStar />My Reviews</li>
+            <li onClick={()=>navigate('/notifications')} className="flex items-center gap-3 rounded-lg p-3 hover:bg-primary cursor-pointer"><FiBell />Notifications</li>
+            <li onClick={logoutUser} className="flex items-center gap-3 rounded-lg p-3 text-red-500 hover:bg-red-50 cursor-pointer"><FiLogOut />Logout</li>
           </ul>)
           }
         </div>

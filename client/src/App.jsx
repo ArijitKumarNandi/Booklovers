@@ -16,6 +16,8 @@ import Footer from './components/Footer'
 import Cart from './pages/Cart'
 import AddressForm from './pages/AddressForm'
 import MyOrders from './pages/MyOrders'
+import MyReviews from './pages/MyReviews'
+import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
 import { ShopContext } from './context/ShopContext'
 import Login from './pages/Login'
@@ -27,6 +29,7 @@ import Orders from './pages/admin/Orders'
 import Loading from './pages/Loading'
 import Dashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
+import Reviews from './pages/admin/Reviews'
 
 
 const App = () => {
@@ -52,6 +55,8 @@ const App = () => {
         <Route path='/cart' element={<Cart />} />
         <Route path='/address-form' element={<AddressForm />} />
         <Route path='/my-orders' element={<MyOrders />} />
+        <Route path='/my-reviews' element={<MyReviews />} />
+        <Route path='/notifications' element={<Notifications />} />
         <Route path='/profile' element={<Profile />} />
         <Route path='/loader' element={<Loading />} />
         <Route path='/admin' element={isAdmin ? <Sidebar /> : <AdminLogin />}>
@@ -60,6 +65,7 @@ const App = () => {
           <Route path='list' element={<ProductList />} />
           <Route path='users' element={<Users />} />
           <Route path='orders' element={<Orders />} />
+          <Route path='reviews' element={<Reviews />} />
         </Route>
       </Routes>
       {!isAdminPath && <Footer />}

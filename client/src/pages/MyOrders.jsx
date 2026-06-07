@@ -1,7 +1,8 @@
 import React, { useContext, useState } from 'react'
 import { ShopContext } from '../context/ShopContext'
-import Title from '../components/Title'
 import { useEffect } from 'react'
+import toast from 'react-hot-toast'
+import { FiPackage, FiRefreshCw } from 'react-icons/fi'
 
 const MyOrders = () => {
   const {currency, user, axios} = useContext(ShopContext)
@@ -27,15 +28,34 @@ const MyOrders = () => {
 
   return (
     <div className='max-padd-container py-16 pt-28'>
-      <Title title1={"My Orders"} title2={"List"} titleStyles={"pb-10"} />
+      <div className='mb-8 flex flex-col gap-3'>
+        <p className='medium-14 text-secondary'>Account / Orders</p>
+        <h1 className='bold-32 leading-tight'>My Orders</h1>
+      </div>
+
+      <div className='mb-6 grid gap-5 rounded-xl bg-primary p-5 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-[1fr_auto] md:items-center lg:p-6'>
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
+          <span className='flexCenter h-16 w-16 rounded-full bg-white text-3xl text-secondary shadow-sm ring-1 ring-slate-900/5'>
+            <FiPackage />
+          </span>
+          <div>
+            <h2 className='bold-28'>Order History</h2>
+            <p className='mt-1'>Track your purchases, payment details, and delivery progress.</p>
+          </div>
+        </div>
+        <button onClick={loadOrderData} className='btn-secondary flexCenter gap-2 !rounded-xl'>
+          <FiRefreshCw />
+          Refresh Orders
+        </button>
+      </div>
       {orders?.map((order)=> (
-        <div key={order._id} className='bg-primary p-2 mt-3 rounded-lg'>
+        <div key={order._id} className='bg-primary p-4 mt-4 rounded-2xl shadow-sm ring-1 ring-slate-900/5'>
           {/* BOOK LIST */}
-          <div className='flex flex-col lg:flex-row gap-4 mb-3'>
+          <div className='grid gap-4 mb-4 md:grid-cols-2 xl:grid-cols-3'>
             {order.items.map((item,index)=>(
-              <div key={index} className='flex gap-x-3'>
-                <div className='flexCenter rounded-lg overflow-hidden'>
-                  <img src={item.product.image[0]} alt="orderImg" className='max-h-20 max-w-32 aspect-square object-contain' />
+              <div key={index} className='flex gap-x-3 rounded-xl bg-white p-3 ring-1 ring-slate-900/5'>
+                <div className='flexCenter rounded-lg overflow-hidden bg-primary'>
+                  <img src={item.product.image[0]} alt="orderImg" className='h-20 w-16 object-contain' />
                 </div>
                 <div className='w-full block'>
                   <h5 className='h5 capitalize line-clamp-1'>{item.product.name}</h5>
@@ -55,7 +75,7 @@ const MyOrders = () => {
           </div>
 
           {/* ORDER SUMMARY */}
-          <div className='flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-t border-gray-300 pt-3'>
+          <div className='flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-t border-[var(--theme-border)] pt-4'>
             <div className='flex flex-col gap-2'>
               <div className='flex items-center gap-x-2'>
                 <h5 className='medium-14'>OrderId:</h5>
@@ -85,13 +105,13 @@ const MyOrders = () => {
             <div className='flex gap-3'>
               <div className='flex items-center gap-x-2'>
                 <h5 className='medium-14'>Status:</h5>
-                <div className='flex items-center gap-1'>
+                <div className='flex items-center gap-1 rounded-full bg-white px-3 py-1 ring-1 ring-slate-900/5'>
                   <span className='min-w-2 h-2 rounded-full bg-green-500' />
                   <p>{order.status}</p>
 
                 </div>
               </div>
-              <button onClick={loadOrderData} className='btn-secondary !py-1 !text-xs rounded-sm'>Track Order</button>
+              <button onClick={loadOrderData} className='btn-secondary !py-2 !px-4 !text-xs !rounded-full'>Track Order</button>
             </div>
           </div>
         </div>

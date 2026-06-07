@@ -1,6 +1,7 @@
 import validator from "validator"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
+import Notification from "../models/Notification.js"
 import User from "../models/User.js"
 
 const cookieOptions = {
@@ -146,6 +147,24 @@ export const updatePassword = async (req,res)=>{
         user.password = await bcrypt.hash(newPassword, 10)
         await user.save()
         return res.json({success:true, message:"Password updated successfully"})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
+
+// DELETE USER ACCOUNT
+export const deleteAccount = async (req,res)=>{
+    try {
+        const {userId} = req
+
+        await Promise.all([
+            Notification.deleteMany({userId}),
+            User.findByIdAndDelete(userId),
+        ])
+
+        res.clearCookie("token", cookieOptions)
+        return res.json({success:true, message:"Account deleted successfully"})
     } catch (error) {
         console.log(error.message)
         res.json({success:false, message:error.message})

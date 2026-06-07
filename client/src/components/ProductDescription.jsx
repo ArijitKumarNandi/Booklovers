@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
+import { FaHeart, FaRegCommentDots } from 'react-icons/fa'
 import { TbStarFilled, TbTrash } from 'react-icons/tb'
 import { ShopContext } from '../context/ShopContext'
 
@@ -9,6 +10,11 @@ const ProductDescription = ({ description, productId }) => {
   const [reviews, setReviews] = useState([])
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
+  const formatReviewDate = (date) => new Intl.DateTimeFormat('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(date))
 
   const loadReviews = async () => {
     try {
@@ -117,22 +123,44 @@ const ProductDescription = ({ description, productId }) => {
           ) : (
             <div className='grid gap-3'>
               {reviews.map((review) => (
-                <div key={review._id} className='bg-primary flex items-start justify-between gap-4 rounded-lg p-4'>
-                  <div>
-                    <div className='flex flex-wrap items-center gap-3'>
-                      <h5 className='h5'>{review.userId?.name ?? 'Booklover'}</h5>
-                      <div className='flex gap-0.5'>
-                        {[1, 2, 3, 4, 5].map((value) => (
-                          <TbStarFilled key={value} className={value <= review.rating ? 'text-yellow-400' : 'text-gray-300'} />
-                        ))}
+                <div key={review._id} className='bg-primary rounded-xl p-4'>
+                  <div className='flex items-start justify-between gap-4'>
+                    <div className='min-w-0'>
+                      <div className='flex flex-wrap items-center gap-3'>
+                        <h5 className='h5'>{review.userId?.name ?? 'Booklover'}</h5>
+                        <div className='flex gap-0.5'>
+                          {[1, 2, 3, 4, 5].map((value) => (
+                            <TbStarFilled key={value} className={value <= review.rating ? 'text-yellow-400' : 'text-gray-300'} />
+                          ))}
+                        </div>
+                        <p>{formatReviewDate(review.createdAt)}</p>
+                        {review.adminLiked && (
+                          <span className='flex items-center gap-1 rounded-full bg-white px-3 py-1 text-red-500 medium-14'>
+                            <FaHeart />
+                            Loved by admin
+                          </span>
+                        )}
                       </div>
+                      <p className='mt-2'>{review.comment}</p>
                     </div>
-                    <p className='mt-2'>{review.comment}</p>
+                    {user?._id === review.userId?._id && (
+                      <button type='button' onClick={() => deleteReview(review._id)} className='text-red-500' aria-label='Delete your review'>
+                        <TbTrash className='text-lg' />
+                      </button>
+                    )}
                   </div>
-                  {user?._id === review.userId?._id && (
-                    <button type='button' onClick={() => deleteReview(review._id)} className='text-red-500' aria-label='Delete your review'>
-                      <TbTrash className='text-lg' />
-                    </button>
+
+                  {review.adminReply?.message && (
+                    <div className='mt-4 rounded-xl bg-white p-4 ring-1 ring-secondary/20'>
+                      <div className='flex flex-wrap items-center gap-2'>
+                        <FaRegCommentDots className='text-secondary' />
+                        <h5 className='h5'>Reply from Bookloversa</h5>
+                        {review.adminReply.repliedAt && (
+                          <p>{formatReviewDate(review.adminReply.repliedAt)}</p>
+                        )}
+                      </div>
+                      <p className='mt-2'>{review.adminReply.message}</p>
+                    </div>
                   )}
                 </div>
               ))}

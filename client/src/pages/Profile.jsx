@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
-import { FiCamera, FiLock, FiMail, FiSave, FiUser } from 'react-icons/fi'
+import { FiCamera, FiLock, FiMail, FiSave, FiTrash2, FiUser } from 'react-icons/fi'
 import userImg from '../assets/user.png'
 import { ShopContext } from '../context/ShopContext'
 
@@ -14,6 +14,7 @@ const Profile = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [savingProfile, setSavingProfile] = useState(false)
   const [savingPassword, setSavingPassword] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   const avatarPreview = useMemo(() => avatar || user?.avatar || userImg, [avatar, user?.avatar])
 
@@ -94,6 +95,27 @@ const Profile = () => {
     }
   }
 
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm('Are you sure you want to delete your account? This will permanently delete your login account and notifications. Your orders, reviews, and addresses will remain in records.')
+    if(!confirmed) return
+
+    setDeletingAccount(true)
+    try {
+      const { data } = await axios.delete('/api/user/account')
+      if(data.success){
+        toast.success(data.message)
+        setUser(null)
+        navigate('/')
+      }else{
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setDeletingAccount(false)
+    }
+  }
+
   if (!user) {
     return <div className='max-padd-container min-h-[60vh] pt-32'>Loading profile...</div>
   }
@@ -101,30 +123,31 @@ const Profile = () => {
   return (
     <div className='max-padd-container py-16 pt-28'>
       <section className='grid gap-6 lg:grid-cols-[0.85fr_1.4fr]'>
-        <aside className='bg-primary rounded-2xl p-6 lg:p-8'>
+        <aside className='bg-primary rounded-2xl p-6 shadow-sm ring-1 ring-slate-900/5 lg:p-8'>
           <div className='flex flex-col items-center text-center'>
             <div className='relative'>
-              <img src={avatarPreview} alt='Profile avatar' className='h-28 w-28 rounded-full object-cover ring-4 ring-white/70' />
-              <label className='absolute bottom-1 right-1 flexCenter h-10 w-10 cursor-pointer rounded-full bg-secondary text-white shadow-lg'>
+              <img src={avatarPreview} alt='Profile avatar' className='h-32 w-32 rounded-full object-cover ring-4 ring-white/80 shadow-sm' />
+              <label className='absolute bottom-2 right-2 flexCenter h-10 w-10 cursor-pointer rounded-full bg-secondary text-white shadow-lg transition hover:scale-105'>
                 <FiCamera />
                 <input type='file' accept='image/*' onChange={handleAvatarChange} className='hidden' />
               </label>
             </div>
             <h1 className='bold-24 mt-5'>{user.name}</h1>
             <p className='mt-1'>{user.email}</p>
+            <span className='mt-4 rounded-full bg-white px-4 py-1 medium-14 text-secondary shadow-sm ring-1 ring-slate-900/5'>Reader account</span>
           </div>
 
-          <div className='surface-card mt-8 rounded-xl p-4 ring-1 ring-slate-900/10'>
+          <div className='surface-card mt-8 rounded-2xl p-5 shadow-sm ring-1 ring-slate-900/10'>
             <h2 className='bold-16'>Account</h2>
             <div className='mt-4 grid gap-3'>
-              <div className='flex items-center gap-3'>
+              <div className='flex items-center gap-3 rounded-xl bg-primary p-3'>
                 <span className='flexCenter h-10 w-10 rounded-full bg-primary text-secondary'><FiUser /></span>
                 <div>
                   <p className='medium-14 !text-inherit'>{user.name}</p>
                   <p className='text-xs'>Display name</p>
                 </div>
               </div>
-              <div className='flex items-center gap-3'>
+              <div className='flex items-center gap-3 rounded-xl bg-primary p-3'>
                 <span className='flexCenter h-10 w-10 rounded-full bg-primary text-secondary'><FiMail /></span>
                 <div>
                   <p className='medium-14 !text-inherit break-all'>{user.email}</p>
@@ -133,10 +156,25 @@ const Profile = () => {
               </div>
             </div>
           </div>
+
+          <div className='surface-card mt-5 rounded-2xl p-5 shadow-sm ring-1 ring-red-200'>
+            <h2 className='bold-16 text-red-600'>Delete Account</h2>
+            <p className='mt-2 text-xs'>Permanently delete your login account and notifications. Orders, reviews, and addresses stay in records.</p>
+            <button
+              type='button'
+              onClick={handleDeleteAccount}
+              disabled={deletingAccount}
+              className='mt-4 flexCenter w-full gap-2 rounded-xl bg-red-600 px-5 py-3 medium-14 text-white transition hover:bg-red-700 disabled:opacity-70'
+            >
+              <FiTrash2 />
+              {deletingAccount ? 'Deleting...' : 'Delete Account'}
+            </button>
+          </div>
         </aside>
 
         <div className='surface-card rounded-2xl p-6 shadow-sm ring-1 ring-slate-900/10 lg:p-8'>
           <div className='mb-7'>
+            <p className='medium-14 text-secondary'>Account settings</p>
             <h1 className='bold-28'>Profile</h1>
             <p className='mt-1'>Update your account details and reading identity.</p>
           </div>

@@ -1,6 +1,7 @@
 import Order from "../models/Order.js"
 import Product from "../models/Product.js"
 import User from "../models/User.js"
+import { createNotification } from "./notificationController.js"
 import stripe from "stripe"
 
 
@@ -8,6 +9,33 @@ import stripe from "stripe"
 const currency = "inr"
 const deliveryCharges = 10 // 10 Dollars
 const taxPercentage = 0.02 // 2% tax charges
+
+const getOrderBookNames = (items = []) => {
+    const names = items
+        .map((item) => item.product?.name)
+        .filter(Boolean)
+
+    if(names.length === 0) return "your books"
+    if(names.length === 1) return names[0]
+    return `${names[0]} and ${names.length - 1} more book${names.length > 2 ? "s" : ""}`
+}
+
+const markStripeOrderPaid = async ({orderId, userId}) => {
+    const order = await Order.findByIdAndUpdate(orderId, {isPaid: true}, {new: true}).populate("items.product")
+    if(!order) return null
+
+    await createNotification({
+        userId,
+        type: "order_placed",
+        title: "Payment successful",
+        message: `Your payment is successful and order of ${getOrderBookNames(order.items)} is placed.`,
+        targetPath: "/my-orders",
+        orderId: order._id,
+    })
+
+    await User.findByIdAndUpdate(userId, {cartData:{}})
+    return order
+}
 
 // PLACE ORDER USING COD
 export const placeOrderCOD = async (req,res)=>{
@@ -18,8 +46,10 @@ export const placeOrderCOD = async (req,res)=>{
             return res.json({success:false, message:"Please add product first"})
         }
         // calculate amount using items
+        let productData = []
         let subtotal = await items.reduce(async (acc, item)=>{
             const product = await Product.findById(item.product)
+            productData.push({name: product.name})
             return (await acc) + product.offerPrice * item.quantity
         }, 0)
 
@@ -27,12 +57,21 @@ export const placeOrderCOD = async (req,res)=>{
         const taxAmount = subtotal * taxPercentage
         const totalAmount = subtotal + taxAmount + deliveryCharges
 
-        await Order.create({
+        const order = await Order.create({
             userId,
             items,
             amount:totalAmount,
             address,
             paymentMethod: "COD"
+        })
+
+        await createNotification({
+            userId,
+            type: "order_placed",
+            title: "Order placed",
+            message: `Your order of ${getOrderBookNames(productData.map((item) => ({product: item})))} is placed successfully.`,
+            targetPath: "/my-orders",
+            orderId: order._id,
         })
 
         // Clear user cart
@@ -116,7 +155,7 @@ export const placeOrderStripe = async (req,res)=>{
         const session = await stripeInstance.checkout.sessions.create({
             line_items,
             mode: 'payment',
-            success_url: `${origin}/loader?next=my-orders`,
+            success_url: `${origin}/loader?next=my-orders&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${origin}/cart`,
             metadata:{
                 orderId: order._id.toString(),
@@ -167,9 +206,7 @@ export const stripeWebhooks = async (request, response)=>{
 
             const {orderId, userId} = session.data[0].metadata
             // Mark order as paid
-            await Order.findByIdAndUpdate(orderId, {isPaid: true})
-            // Clear User Cart
-            await User.findByIdAndUpdate(userId, {cartData:{}})
+            await markStripeOrderPaid({orderId, userId})
             break;
         } 
         
@@ -194,6 +231,36 @@ export const stripeWebhooks = async (request, response)=>{
             break;
     }
     response.json({received:true})
+}
+
+// CONFIRM STRIPE PAYMENT AFTER USER RETURNS FROM CHECKOUT
+export const confirmStripePayment = async (req,res)=>{
+    try {
+        const {sessionId} = req.body
+        const userId = req.userId
+
+        if(!sessionId){
+            return res.json({success:false, message:"Stripe session id is required"})
+        }
+
+        const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY)
+        const session = await stripeInstance.checkout.sessions.retrieve(sessionId)
+        const {orderId, userId: sessionUserId} = session.metadata ?? {}
+
+        if(!orderId || sessionUserId !== userId){
+            return res.json({success:false, message:"Invalid Stripe session"})
+        }
+
+        if(session.payment_status !== "paid"){
+            return res.json({success:false, message:"Payment is not completed yet"})
+        }
+
+        await markStripeOrderPaid({orderId, userId})
+        return res.json({success:true, message:"Payment confirmed"})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
 }
 
 // ALL ORDERS DATA FOR FRONTEND BY USERID
@@ -223,7 +290,19 @@ export const allOrders = async (req,res)=>{
 export const updateStatus = async (req,res)=>{
     try {
         const {orderId, status} = req.body
-        await Order.findByIdAndUpdate(orderId, {status})
+        const order = await Order.findByIdAndUpdate(orderId, {status}, {new: true}).populate("items.product")
+
+        if(order && ["Shipped", "Out for delivery", "Delivered"].includes(status)){
+            const statusText = status === "Out for delivery" ? "out for delivery" : status.toLowerCase()
+            await createNotification({
+                userId: order.userId,
+                type: "order_status",
+                title: "Order status updated",
+                message: `Your order of ${getOrderBookNames(order.items)} has been ${statusText}.`,
+                targetPath: "/my-orders",
+                orderId: order._id,
+            })
+        }
 
         res.json({success:true, message:"Order status updated"})
     } catch (error) {

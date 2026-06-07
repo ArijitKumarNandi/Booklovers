@@ -11,6 +11,7 @@ import cartRouter from "./routes/cartRoute.js"
 import addressRouter from "./routes/addressRoute.js"
 import orderRouter from "./routes/orderRoute.js"
 import reviewRouter from "./routes/reviewRoute.js"
+import notificationRouter from "./routes/notificationRoute.js"
 import { stripeWebhooks } from "./controllers/orderController.js"
 
 const app = express() // Initialize Express Application
@@ -56,6 +57,7 @@ app.use('/api/cart', cartRouter) // Routes for cart-related operations
 app.use('/api/address', addressRouter) // Routes for address-related operations
 app.use('/api/order', orderRouter) // Routes for order-related operations
 app.use('/api/review', reviewRouter) // Routes for book review operations
+app.use('/api/notification', notificationRouter) // Routes for user notifications
 
 // Root Endpoint to check API Status
 app.get('/', (req, res)=>{
