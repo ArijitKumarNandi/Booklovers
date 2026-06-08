@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useMemo } from 'react'
 import bg from "../assets/bg.png"
 import bgHero from "../assets/bg-hero.png"
 import { FaArrowRight } from 'react-icons/fa6'
@@ -18,13 +18,14 @@ import { ShopContext } from '../context/ShopContext'
 
 
 const Hero = () => {
-    const [popularBooks, setPopularBooks] = useState([])
     const {books} = useContext(ShopContext)
 
     // Getting popular books data
-    useEffect(()=>{
-        const data= books.filter((item)=> item.popular)
-        setPopularBooks(data.slice(0, 6))
+    const popularBooks = useMemo(() => {
+        return books
+            .filter((item)=> item.popular)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 6)
     },[books])
 
 

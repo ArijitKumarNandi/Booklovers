@@ -74,6 +74,15 @@ const Login = () => {
     setShowPassword(false)
   }
 
+  const handleRememberMeChange = (event) => {
+    const isChecked = event.target.checked
+    setRememberMe(isChecked)
+
+    if(!isChecked){
+      localStorage.removeItem(rememberedLoginKey)
+    }
+  }
+
   return (
     <div onClick={()=>setShowUserLogin(false)} className='fixed top-0 bottom-0 left-0 right-0 z-40 flex items-center text-sm text-gray-600 bg-black/50'>
       <form onSubmit={state === "forgot" ? onForgotSubmitHandler : onSubmitHandler} onClick={(e)=> e.stopPropagation()} className='flex flex-col gap-4 m-auto items-start p-8 py-12 w-80 sm:w-[352px] rounded-lg shadow-xl border border-gray-200 bg-white'>
@@ -111,13 +120,13 @@ const Login = () => {
         )}
         <div className='w-full'>
           <p className='medium-14'>Email</p>
-          <input type="email" onChange={(e) => setEmail(e.target.value)} value={email} placeholder='Type here...' className='border border-gray-200 rounded w-full p-2 mt-1 outline-black/80' required />
+          <input type="email" onChange={(e) => setEmail(e.target.value)} value={email} placeholder='Type here...' autoComplete={rememberMe ? 'email' : 'off'} className='border border-gray-200 rounded w-full p-2 mt-1 outline-black/80' required />
 
         </div>
         <div className='w-full'>
           <p className='medium-14'>Password</p>
           <div className='relative mt-1'>
-            <input type={showPassword ? "text" : "password"} onChange={(e) => setPassword(e.target.value)} value={password} placeholder='Type here...' className='border border-gray-200 rounded w-full p-2 pr-10 outline-black/80' required />
+            <input type={showPassword ? "text" : "password"} onChange={(e) => setPassword(e.target.value)} value={password} placeholder='Type here...' autoComplete={rememberMe ? 'current-password' : 'new-password'} className='border border-gray-200 rounded w-full p-2 pr-10 outline-black/80' required />
             {password && (
               <button
                 type='button'
@@ -134,7 +143,7 @@ const Login = () => {
         {state === "login" && (
           <div className='flex w-full items-center justify-between gap-3'>
             <label className='flex items-center gap-2 cursor-pointer'>
-              <input type='checkbox' checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className='h-4 w-4 accent-secondary' />
+              <input type='checkbox' checked={rememberMe} onChange={handleRememberMeChange} className='h-4 w-4 accent-secondary' />
               <span>Remember me</span>
             </label>
             <button type='button' onClick={switchToForgot} className='text-secondary cursor-pointer'>

@@ -4,7 +4,7 @@ import { ShopContext } from '../../context/ShopContext'
 import toast from "react-hot-toast"
 
 const AddProduct = () => {
-  const {axios} = useContext(ShopContext)
+  const {axios, fetchBooks} = useContext(ShopContext)
   const [files, setFiles] = useState([])
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
@@ -76,6 +76,7 @@ const AddProduct = () => {
       const {data} = await axios.post("/api/product/add", formData)
       if(data.success){
         toast.success(data.message)
+        await fetchBooks()
         setName("")
         setDescription("");
         setFiles([]);
