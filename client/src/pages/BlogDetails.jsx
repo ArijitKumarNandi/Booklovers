@@ -19,8 +19,8 @@ const BlogDetails = () => {
     <article className='max-padd-container py-16 pt-28'>
       <Link to='/blog' className='underline bold-14'>Back to all blogs</Link>
 
-      <div className='mt-6 overflow-hidden rounded-2xl bg-primary'>
-        <img src={blog.image} alt={blog.title} className='h-[260px] w-full object-cover sm:h-[380px]' />
+      <div className='mx-auto mt-6 max-w-5xl overflow-hidden rounded-2xl bg-primary shadow-sm'>
+        <img src={blog.image} alt={blog.title} className='aspect-[16/9] w-full object-cover object-center sm:aspect-[21/9]' />
       </div>
 
       <div className='mx-auto mt-8 max-w-4xl'>

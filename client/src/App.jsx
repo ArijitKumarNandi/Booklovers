@@ -19,6 +19,7 @@ import MyOrders from './pages/MyOrders'
 import MyReviews from './pages/MyReviews'
 import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
+import ResetPassword from './pages/ResetPassword'
 import { ShopContext } from './context/ShopContext'
 import Login from './pages/Login'
 import Sidebar from './components/admin/Sidebar'
@@ -58,6 +59,7 @@ const App = () => {
         <Route path='/my-reviews' element={<MyReviews />} />
         <Route path='/notifications' element={<Notifications />} />
         <Route path='/profile' element={<Profile />} />
+        <Route path='/reset-password/:token' element={<ResetPassword />} />
         <Route path='/loader' element={<Loading />} />
         <Route path='/admin' element={isAdmin ? <Sidebar /> : <AdminLogin />}>
           <Route index element={isAdmin ? <Dashboard /> : null} />

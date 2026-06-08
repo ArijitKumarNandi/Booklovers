@@ -1,8 +1,10 @@
 import validator from "validator"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
+import crypto from "crypto"
 import Notification from "../models/Notification.js"
 import User from "../models/User.js"
+import { sendMail } from "../config/mailer.js"
 
 const cookieOptions = {
     httpOnly: true, // Prevent client-side javascript from accessing the cookie
@@ -81,6 +83,100 @@ export const isAuth = async (req,res)=>{
         const {userId} = req
         const user = await User.findById(userId).select("-password")
         return res.json({success:true, user})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
+
+const getClientUrl = (req) => {
+    return process.env.CLIENT_URL || `${req.protocol}://${req.get("host")}`.replace(":4000", ":5173")
+}
+
+const getResetEmailHtml = (resetLink) => {
+    return `
+        <div style="margin:0;padding:32px;background:#f3f4f6;font-family:Arial,sans-serif;color:#111827;">
+            <div style="max-width:520px;margin:0 auto;background:#050505;color:#ffffff;border-radius:8px;padding:32px;text-align:center;">
+                <h2 style="margin:0 0 22px;font-size:22px;">Reset Your Password</h2>
+                <p style="margin:0 0 18px;text-align:left;line-height:1.6;">Dear User,</p>
+                <p style="margin:0 0 26px;text-align:left;line-height:1.6;">You requested to reset your password. Please click the button below to proceed.</p>
+                <a href="${resetLink}" style="display:inline-block;background:#ffffff;color:#111827;text-decoration:none;font-weight:700;border-radius:4px;padding:13px 24px;margin-bottom:26px;">Reset Password</a>
+                <p style="margin:0 0 18px;text-align:left;line-height:1.6;">If you did not request this, please ignore this email. The link will expire in 15 minutes.</p>
+                <p style="margin:0 0 8px;text-align:left;line-height:1.6;">If the button above doesn't work, copy and paste the following URL into your browser:</p>
+                <a href="${resetLink}" style="display:block;color:#7dd3fc;text-align:left;word-break:break-all;margin-bottom:26px;">${resetLink}</a>
+                <p style="margin:0;line-height:1.6;color:#d1d5db;">Thank you,<br/>Booklovers Team</p>
+                <p style="margin:24px 0 0;font-size:12px;color:#9ca3af;">This is an automated message. Please do not reply to this email.</p>
+            </div>
+        </div>
+    `
+}
+
+// SEND PASSWORD RESET LINK
+export const forgotPassword = async (req,res)=>{
+    try {
+        const {email} = req.body
+
+        if(!validator.isEmail(email || "")){
+            return res.json({success:false, message:"Please enter a valid email"})
+        }
+
+        const user = await User.findOne({email})
+        if(!user){
+            return res.json({success:false, message:"No account found with this email"})
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex")
+        user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+        user.resetPasswordExpires = Date.now() + 15 * 60 * 1000
+        await user.save()
+
+        const resetLink = `${getClientUrl(req)}/reset-password/${resetToken}`
+
+        await sendMail({
+            to: user.email,
+            subject: "Booklovers Password Recovery",
+            html: getResetEmailHtml(resetLink),
+        })
+
+        return res.json({success:true, message:`Reset link sent to ${user.email}`})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
+
+// RESET USER PASSWORD
+export const resetPassword = async (req,res)=>{
+    try {
+        const {token} = req.params
+        const {password, confirmPassword} = req.body
+
+        if(!password || !confirmPassword){
+            return res.json({success:false, message:"Please fill all password fields"})
+        }
+        if(password !== confirmPassword){
+            return res.json({success:false, message:"Passwords do not match"})
+        }
+        if(password.length < 8){
+            return res.json({success:false, message:"Please enter a strong password"})
+        }
+
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
+        const user = await User.findOne({
+            resetPasswordToken: hashedToken,
+            resetPasswordExpires: {$gt: Date.now()},
+        })
+
+        if(!user){
+            return res.json({success:false, message:"Reset link is invalid or expired"})
+        }
+
+        user.password = await bcrypt.hash(password, 10)
+        user.resetPasswordToken = ""
+        user.resetPasswordExpires = undefined
+        await user.save()
+
+        return res.json({success:true, message:"Password reset successfully"})
     } catch (error) {
         console.log(error.message)
         res.json({success:false, message:error.message})

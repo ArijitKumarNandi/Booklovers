@@ -1,11 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ShopContext } from '../../context/ShopContext'
 import toast from "react-hot-toast"
+import { RiEyeLine, RiEyeOffLine } from 'react-icons/ri'
 
 const AdminLogin = () => {
   const {isAdmin, setIsAdmin, navigate, axios} = useContext(ShopContext);
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
 
 
   const onSubmitHandler = async (event)=>{
@@ -43,7 +45,19 @@ const AdminLogin = () => {
             </div>
             <div className='w-full'>
                 <p className='medium-14'>Password</p>
-                <input type="password" onChange={(e) => setPassword(e.target.value)} value={password} placeholder='Type here...' className='border border-gray-200 rounded w-full p-2 mt-1 outline-black/80' required />
+                <div className='relative mt-1'>
+                    <input type={showPassword ? "text" : "password"} onChange={(e) => setPassword(e.target.value)} value={password} placeholder='Type here...' className='border border-gray-200 rounded w-full p-2 pr-10 outline-black/80' required />
+                    {password && (
+                        <button
+                            type='button'
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            className='absolute right-3 top-1/2 -translate-y-1/2 text-lg text-gray-500 hover:text-gray-800'
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                            {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
+                        </button>
+                    )}
+                </div>
 
             </div>
             <button type="submit" className='btn-secondary w-full rounded !py-2.5 mt-3'>
