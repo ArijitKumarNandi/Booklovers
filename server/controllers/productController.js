@@ -1,6 +1,8 @@
 import {v2 as cloudinary} from "cloudinary"
 import { readFile, unlink } from "fs/promises"
+import Notification from "../models/Notification.js"
 import Product from "../models/Product.js"
+import User from "../models/User.js"
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
@@ -149,6 +151,17 @@ export const addProduct = async (req,res)=>{
         console.log(productData)
 
         await Product.create({...productData, image:imagesUrl})
+
+        const users = await User.find({}).select("_id")
+        if(users.length > 0){
+            await Notification.insertMany(users.map((user) => ({
+                userId: user._id,
+                type: "product_added",
+                title: "New books added",
+                message: "New books have been added to the collection, check it out",
+                targetPath: "/shop",
+            })))
+        }
 
         res.json({success:true, message:"Product Added"})
     } catch (error) {

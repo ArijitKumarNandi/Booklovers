@@ -8,6 +8,7 @@ import { ShopContext } from '../context/ShopContext'
 const notificationIcon = {
   order_placed: <FaShoppingBag />,
   order_status: <FaTruckFast />,
+  product_added: <FaShoppingBag />,
   review_reply: <MdRateReview />,
   review_liked: <FaHeart />,
 }
@@ -15,6 +16,7 @@ const notificationIcon = {
 const notificationTone = {
   order_placed: 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/20',
   order_status: 'bg-sky-500/10 text-sky-600 ring-sky-500/20',
+  product_added: 'bg-amber-500/10 text-amber-600 ring-amber-500/20',
   review_reply: 'bg-secondary/10 text-secondary ring-secondary/20',
   review_liked: 'bg-red-500/10 text-red-500 ring-red-500/20',
 }
@@ -83,10 +85,11 @@ const Notifications = () => {
           </span>
           <div>
             <h1 className='bold-28'>Notification Center</h1>
-            <p className='mt-1'>Order updates, payment confirmations, and admin review activity stay here.</p>
+            <p className='mt-1'>Order updates, payment confirmations, new arrivals, and admin review activity stay here.</p>
             <div className='mt-4 flex flex-wrap gap-2'>
               <span className='rounded-full bg-white px-3 py-1 medium-14 shadow-sm ring-1 ring-slate-900/5'>Orders</span>
               <span className='rounded-full bg-white px-3 py-1 medium-14 shadow-sm ring-1 ring-slate-900/5'>Payments</span>
+              <span className='rounded-full bg-white px-3 py-1 medium-14 shadow-sm ring-1 ring-slate-900/5'>New books</span>
               <span className='rounded-full bg-white px-3 py-1 medium-14 shadow-sm ring-1 ring-slate-900/5'>Reviews</span>
               <span className='rounded-full bg-white px-3 py-1 medium-14 shadow-sm ring-1 ring-slate-900/5'>Admin replies</span>
             </div>
