@@ -14,6 +14,8 @@ const Header = () => {
   const [menuOpened, setMenuOpened] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const mobileMenuRef = useRef(null);
+  const mobileMenuButtonRef = useRef(null);
   const userMenuRef = useRef(null);
   const {navigate, user, searchQuery, setSearchQuery, getCartCount, setShowUserLogin, logoutUser} = useContext(ShopContext)
   const isShopPage = useLocation().pathname.endsWith("/shop")
@@ -64,6 +66,37 @@ const Header = () => {
     }
   }, [userMenuOpen])
 
+  useEffect(()=>{
+    if(!menuOpened) return
+
+    const closeMobileMenu = () => setMenuOpened(false)
+
+    const handlePointerDown = (event) => {
+      const clickedInsideMenu = mobileMenuRef.current?.contains(event.target)
+      const clickedToggle = mobileMenuButtonRef.current?.contains(event.target)
+
+      if(!clickedInsideMenu && !clickedToggle){
+        closeMobileMenu()
+      }
+    }
+
+    const handleKeyDown = (event) => {
+      if(event.key === "Escape"){
+        closeMobileMenu()
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown)
+    document.addEventListener("touchstart", handlePointerDown)
+    document.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown)
+      document.removeEventListener("touchstart", handlePointerDown)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [menuOpened])
+
   return (
     <header className="absolute top-0 left-0 right-0 max-padd-container flexBetween gap-4 py-2">
       {/* LOGO */}
@@ -74,7 +107,7 @@ const Header = () => {
         </Link>
       </div>
       {/* NAVBAR FOR MOBILE AND DESKTOP */}
-      <div className={`flex-1 flex justify-center transition-transform duration-300 ${showSearch ? "xl:-translate-x-14" : ""}`}>
+      <div ref={mobileMenuRef} className={`flex-1 flex justify-center transition-transform duration-300 ${showSearch ? "xl:-translate-x-14" : ""}`}>
         <Navbar setMenuOpened={setMenuOpened} containerStyles={`${menuOpened ? "flex items-start flex-col gap-y-8 fixed top-16 right-6 p-5 bg-white rounded-xl shadow-md w-52 ring-1 ring-slate-900/5 z-50" : "hidden lg:flex gap-x-1.5 xl:gap-x-2.5 ring-1 ring-slate-900/15 rounded-full p-1 bg-primary"}`} />
       </div>
       <div className="flex sm:flex-1 items-center sm:justify-end gap-x-4 xl:gap-x-5">
@@ -93,13 +126,16 @@ const Header = () => {
           </div>
         </div>
         {/* MENU TOGGLE */}
-        <>
-        {menuOpened ? (
-          <FaBarsStaggered onClick={toggleMenu} className="lg:hidden cursor-pointer text-xl"/>
-        ) : (
-          <FaBars onClick={toggleMenu} className="lg:hidden cursor-pointer text-xl"/>
-        )}
-        </>
+        <button
+          ref={mobileMenuButtonRef}
+          type='button'
+          onClick={toggleMenu}
+          className='lg:hidden cursor-pointer text-xl'
+          aria-label={menuOpened ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={menuOpened}
+        >
+          {menuOpened ? <FaBarsStaggered /> : <FaBars />}
+        </button>
         {/* CART */}
         <Link to={'/cart'} className="relative flex shrink-0 items-center gap-2">
         <div className="bold-16">

@@ -1,13 +1,42 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { IoCheckmark, IoColorPaletteOutline } from 'react-icons/io5'
 import { ThemeContext } from '../context/theme'
 
 const ThemeSelector = () => {
   const { theme, setTheme, themes } = useContext(ThemeContext)
   const [isOpen, setIsOpen] = useState(false)
+  const themeSelectorRef = useRef(null)
+
+  useEffect(() => {
+    if(!isOpen) return
+
+    const closeThemeSelector = () => setIsOpen(false)
+
+    const handlePointerDown = (event) => {
+      if(themeSelectorRef.current && !themeSelectorRef.current.contains(event.target)){
+        closeThemeSelector()
+      }
+    }
+
+    const handleKeyDown = (event) => {
+      if(event.key === 'Escape'){
+        closeThemeSelector()
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('touchstart', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('touchstart', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen])
 
   return (
-    <div className='relative'>
+    <div ref={themeSelectorRef} className='relative'>
       <button
         type='button'
         onClick={() => setIsOpen((prev) => !prev)}
