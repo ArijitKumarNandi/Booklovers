@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
     password:{type:String, required:true},
     avatar:{type:String, default:""},
     cartData:{type:Object, default:{}},
+    wishlist:[{type:mongoose.Schema.Types.ObjectId, ref:"product"}],
     resetPasswordToken:{type:String, default:""},
     resetPasswordExpires:{type:Date},
 }, {minimize: false, timestamps:true})

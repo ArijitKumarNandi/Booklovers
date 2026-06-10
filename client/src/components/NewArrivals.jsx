@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import Title from './Title'
 import Item from './Item'
@@ -14,11 +14,14 @@ import { Autoplay } from 'swiper/modules';
 
 const NewArrivals = () => {
 
-const [newArrivals, setNewArrivals] = useState([])
 const {books} = useContext(ShopContext)
 
-useEffect(()=>{
-    setNewArrivals(books.slice(0, 6))
+const newArrivals = useMemo(() => {
+    return books
+        .filter((book) => book.inStock)
+        .slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 6)
 }, [books])
 
   return (

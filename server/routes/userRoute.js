@@ -1,5 +1,5 @@
 import express from "express"
-import { deleteAccount, forgotPassword, isAuth, logout, resetPassword, updatePassword, updateProfile, userLogin, userRegister } from "../controllers/userController.js"
+import { deleteAccount, forgotPassword, getWishlist, isAuth, logout, resetPassword, toggleWishlist, updatePassword, updateProfile, userLogin, userRegister } from "../controllers/userController.js"
 import authUser from "../middlewares/authUser.js"
 
 const userRouter = express.Router()
@@ -10,6 +10,8 @@ userRouter.post('/forgot-password', forgotPassword)
 userRouter.post('/reset-password/:token', resetPassword)
 userRouter.post('/logout', logout)
 userRouter.get('/is-auth', authUser, isAuth)
+userRouter.get('/wishlist', authUser, getWishlist)
+userRouter.post('/wishlist/toggle', authUser, toggleWishlist)
 userRouter.put('/profile', authUser, updateProfile)
 userRouter.put('/password', authUser, updatePassword)
 userRouter.delete('/account', authUser, deleteAccount)

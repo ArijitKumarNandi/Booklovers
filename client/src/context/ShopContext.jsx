@@ -16,6 +16,7 @@ const ShopContextProvider = ({children}) => {
     const [searchQuery, setSearchQuery] = useState("")
     const currency = import.meta.env.VITE_CURRENCY
     const [cartItems, setCartItems] = useState({})
+    const [wishlistItems, setWishlistItems] = useState([])
     const [method, setMethod] = useState("COD")
     const [showUserLogin, setShowUserLogin] = useState("")
     const delivery_charges = 10 // 10 Dollars
@@ -42,13 +43,16 @@ const ShopContextProvider = ({children}) => {
         if(data.success){
           setUser(data.user)
           setCartItems(data.user.cartData)
+          setWishlistItems((data.user.wishlist || []).map((item) => item.toString()))
         }else{
           setUser(null)
           setCartItems({})
+          setWishlistItems([])
         }
       } catch (error) {
           setUser(null)
           setCartItems({})
+          setWishlistItems([])
       }
     }
 
@@ -70,6 +74,7 @@ const ShopContextProvider = ({children}) => {
           toast.success(data.message)
           setUser(null)
           setCartItems({})
+          setWishlistItems([])
           navigate('/')
         }else{
           toast.error(data.message)
@@ -134,6 +139,28 @@ const ShopContextProvider = ({children}) => {
       }
     }
 
+    const toggleWishlist = async (productId)=>{
+      if(!user){
+        toast.error("Please login to add books to your wishlist")
+        return null
+      }
+
+      try {
+        const {data} = await axios.post('/api/user/wishlist/toggle', {productId})
+        if(data.success){
+          setWishlistItems((data.wishlist || []).map((item) => item.toString()))
+          toast.success(data.message)
+          return data
+        }else{
+          toast.error(data.message)
+          return null
+        }
+      } catch (error) {
+        toast.error(error.message)
+        return null
+      }
+    }
+
     // Getting total cart amount
     const getCartAmount = ()=>{
       let totalAmount = 0
@@ -156,7 +183,7 @@ const ShopContextProvider = ({children}) => {
         
     },[])
 
-    const value = {books,navigate,user,setUser,currency, searchQuery, setSearchQuery, cartItems, setCartItems, addToCart, getCartAmount, getCartCount, updateQuantity, method, setMethod, delivery_charges, showUserLogin, setShowUserLogin, isAdmin, setIsAdmin, axios, fetchBooks, fetchUser, logoutUser }
+    const value = {books,navigate,user,setUser,currency, searchQuery, setSearchQuery, cartItems, setCartItems, addToCart, getCartAmount, getCartCount, updateQuantity, method, setMethod, delivery_charges, showUserLogin, setShowUserLogin, isAdmin, setIsAdmin, axios, fetchBooks, fetchUser, logoutUser, wishlistItems, setWishlistItems, toggleWishlist }
 
   return (
     <ShopContext.Provider value={value}>

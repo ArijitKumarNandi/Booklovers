@@ -8,32 +8,13 @@ import ProductDescription from '../components/ProductDescription'
 import ProductFeatures from '../components/ProductFeatures'
 import RelatedBooks from '../components/RelatedBooks'
 
-const getWishlist = () => {
-  try {
-    return JSON.parse(localStorage.getItem('booklovers-wishlist')) ?? []
-  } catch {
-    return []
-  }
-}
-
 const ProductDetails = () => {
-  const {books, currency, addToCart} = useContext(ShopContext)
+  const {books, currency, addToCart, wishlistItems, toggleWishlist} = useContext(ShopContext)
   const {id} = useParams()
   const book = books.find((b)=> b._id === id)
   const [selectedImage, setSelectedImage] = useState(null)
-  const [wishlist, setWishlist] = useState(getWishlist)
   const image = selectedImage?.bookId === id ? selectedImage.src : book?.image[0]
-  const isWishlisted = wishlist.includes(id)
-
-  const toggleWishlist = () => {
-    const updatedWishlist = isWishlisted
-      ? wishlist.filter((bookId) => bookId !== id)
-      : [...wishlist, id]
-
-    setWishlist(updatedWishlist)
-    localStorage.setItem('booklovers-wishlist', JSON.stringify(updatedWishlist))
-    toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist')
-  }
+  const isWishlisted = wishlistItems.includes(id)
 
   const copyPageUrl = async () => {
     const pageUrl = window.location.href
@@ -107,7 +88,7 @@ const ProductDetails = () => {
               <button onClick={()=>addToCart(book._id)} className="btn-dark sm:w-1/2 flexCenter gap-x-2 capitalize !rounded-md">Add to Cart <TbShoppingBagPlus /></button>
               <button
                 type='button'
-                onClick={toggleWishlist}
+                onClick={()=>toggleWishlist(book._id)}
                 className='btn-secondary !rounded-md'
                 aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                 aria-pressed={isWishlisted}

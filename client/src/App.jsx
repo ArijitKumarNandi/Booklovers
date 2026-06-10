@@ -19,6 +19,7 @@ import MyOrders from './pages/MyOrders'
 import MyReviews from './pages/MyReviews'
 import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
+import Wishlist from './pages/Wishlist'
 import ResetPassword from './pages/ResetPassword'
 import { ShopContext } from './context/ShopContext'
 import Login from './pages/Login'
@@ -57,6 +58,7 @@ const App = () => {
         <Route path='/address-form' element={<AddressForm />} />
         <Route path='/my-orders' element={<MyOrders />} />
         <Route path='/my-reviews' element={<MyReviews />} />
+        <Route path='/wishlist' element={<Wishlist />} />
         <Route path='/notifications' element={<Notifications />} />
         <Route path='/profile' element={<Profile />} />
         <Route path='/reset-password/:token' element={<ResetPassword />} />

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import crypto from "crypto"
 import Notification from "../models/Notification.js"
+import Product from "../models/Product.js"
 import User from "../models/User.js"
 import { sendMail } from "../config/mailer.js"
 
@@ -89,8 +90,27 @@ export const isAuth = async (req,res)=>{
     }
 }
 
+const normalizeUrl = (url) => url?.trim().replace(/\/+$/, "")
+
+const isTrustedClientOrigin = (origin) => {
+    if(!origin) return false
+    if(origin === "http://localhost:5173") return true
+    if(origin === "https://booklovers-kohl.vercel.app") return true
+    return /^https:\/\/booklovers-[a-z0-9-]+\.vercel\.app$/i.test(origin)
+}
+
 const getClientUrl = (req) => {
-    return process.env.CLIENT_URL || `${req.protocol}://${req.get("host")}`.replace(":4000", ":5173")
+    const configuredClientUrl = normalizeUrl(process.env.CLIENT_URL)
+    if(configuredClientUrl){
+        return configuredClientUrl
+    }
+
+    const requestOrigin = normalizeUrl(req.get("origin"))
+    if(isTrustedClientOrigin(requestOrigin)){
+        return requestOrigin
+    }
+
+    return `${req.protocol}://${req.get("host")}`.replace(":4000", ":5173")
 }
 
 const getResetEmailHtml = (resetLink) => {
@@ -243,6 +263,70 @@ export const updatePassword = async (req,res)=>{
         user.password = await bcrypt.hash(newPassword, 10)
         await user.save()
         return res.json({success:true, message:"Password updated successfully"})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
+
+// GET USER WISHLIST
+export const getWishlist = async (req,res)=>{
+    try {
+        const {userId} = req
+        const user = await User.findById(userId).populate({
+            path: "wishlist",
+            match: {inStock: true},
+        })
+
+        if(!user){
+            return res.json({success:false, message:"User not found"})
+        }
+
+        const wishlist = (user.wishlist || []).filter(Boolean)
+        return res.json({success:true, wishlist})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
+
+// TOGGLE WISHLIST BOOK
+export const toggleWishlist = async (req,res)=>{
+    try {
+        const {userId} = req
+        const {productId} = req.body
+
+        if(!productId){
+            return res.json({success:false, message:"Product is required"})
+        }
+
+        const product = await Product.findById(productId)
+        if(!product){
+            return res.json({success:false, message:"Book not found"})
+        }
+
+        const user = await User.findById(userId)
+        if(!user){
+            return res.json({success:false, message:"User not found"})
+        }
+
+        const wishlist = user.wishlist || []
+        const isWishlisted = wishlist.some((itemId) => itemId.toString() === productId)
+
+        if(isWishlisted){
+            user.wishlist = wishlist.filter((itemId) => itemId.toString() !== productId)
+        }else{
+            user.wishlist = [...wishlist, product._id]
+        }
+
+        await user.save()
+
+        return res.json({
+            success:true,
+            message:isWishlisted ? "Removed from wishlist" : "Added to wishlist",
+            wishlist:user.wishlist,
+            isWishlisted:!isWishlisted,
+        })
     } catch (error) {
         console.log(error.message)
         res.json({success:false, message:error.message})
