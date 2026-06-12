@@ -17,7 +17,7 @@ const Categories = () => {
           <div key={index} onClick={()=>navigate(`/shop/${cat.name.toLowerCase()}`)} className='flexCenter flex-col cursor-pointer group'>
             <div className={`flexCenter flex-col h-36 w-36 sm:h-40 sm:w-40 rounded-xl ${colors[index % 3]}`}>
               <img src={cat.image} alt={cat.name} height={46} width={46} className='object-cover' />
-              <h5 className='h5 capitalize mt-6'>{cat.name}</h5>
+              <h5 className='h5 capitalize mt-6 text-black'>{cat.name}</h5>
             </div>
           </div>
         )) }

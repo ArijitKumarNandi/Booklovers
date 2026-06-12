@@ -35,8 +35,8 @@ const Hero = () => {
                 {/* LEFT SIDE */}
                 <div className="max-padd-container flex flex-col h-full justify-center pt-8">
                     <h3 className="bold-24 text-secondary font-thin">Explore Books You'll Love</h3>
-                    <h1 className="h1 max-w-[699px] !font-[800] leading-none">Find Your Next Book</h1>
-                    <h2 className="capitalize h2 tracking-wider">Up to 40% Off This Week</h2>
+                    <h1 className="h1 max-w-[699px] !font-[800] leading-none text-black">Find Your Next Book</h1>
+                    <h2 className="capitalize h2 tracking-wider text-black">Up to 40% Off This Week</h2>
                     <p className="max-w-xl pt-5">Discover the joy of reading with our carefully curated collection of books. Whether you're searching for the latest bestsellers, timeless classics, or hidden gems, we've got something for every reader. Enjoy fast delivery, secure checkout, and unbeatable prices - your next great read is just a click away!</p>
                     {/* BUTTON */}
                     <div className="flex mt-4">
