@@ -43,7 +43,7 @@ const Footer = () => {
             <Link to={"/"} className="bold-22 xl:bold-28 flex items-end gap-1">
               <img src={logoImg} alt="" className='h-9' />
               <div className='relative top-1.5'>
-                Booklovers<span className='text-secondary'>a.</span>
+                Booklovers
               </div>
 
             </Link>

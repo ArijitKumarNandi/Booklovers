@@ -154,7 +154,7 @@ const ProductDescription = ({ description, productId }) => {
                     <div className='mt-4 rounded-xl bg-white p-4 ring-1 ring-secondary/20'>
                       <div className='flex flex-wrap items-center gap-2'>
                         <FaRegCommentDots className='text-secondary' />
-                        <h5 className='h5'>Reply from Bookloversa</h5>
+                        <h5 className='h5'>Reply from Booklovers</h5>
                         {review.adminReply.repliedAt && (
                           <p>{formatReviewDate(review.adminReply.repliedAt)}</p>
                         )}

@@ -103,7 +103,7 @@ const Header = () => {
       <div className="flex flex-1">
         <Link to={'/'} className="bold-22 xl:bold-28 flex items-end gap-1">
         <img src={logoImg} alt="" className="hidden sm:block h-9"/>
-        <div className="sm:relative top-1.5">Booklovers<span className="text-secondary">a.</span></div>
+        <div className="sm:relative top-1.5">Booklovers</div>
         </Link>
       </div>
       {/* NAVBAR FOR MOBILE AND DESKTOP */}

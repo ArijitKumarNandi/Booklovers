@@ -40,7 +40,7 @@ const Sidebar = () => {
         <div className='max-sm:flexCenter max-sm:pb-3 bg-primary pb-3 m-2 sm:min-w-[20%] sm:min-h-[97vh] rounded-2xl shadow-sm ring-1 ring-slate-900/5'>
             <div className='flex h-full flex-col gap-y-6 max-sm:items-center sm:flex-col pt-4 sm:pt-12'>
                 {/* LOGO */}
-                <Link to={'/admin'} className='bold-20 md:bold-24 uppercase font-paci lg:pl-[15%]'>Bookloversa<span className='text-secondary bold-28'>.</span></Link>
+                <Link to={'/admin'} className='bold-20 md:bold-24 uppercase font-paci lg:pl-[15%]'>Booklovers</Link>
                 <p className='hidden px-6 text-xs uppercase tracking-[0.2em] text-gray-50 sm:block lg:pl-[15%]'>Admin workspace</p>
                 <div className='flex sm:flex-col sm:gap-x-5 gap-y-3 sm:pt-6'>
                     {navItems.map((link)=>(
