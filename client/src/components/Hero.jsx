@@ -23,7 +23,7 @@ const Hero = () => {
     // Getting popular books data
     const popularBooks = useMemo(() => {
         return books
-            .filter((item)=> item.popular)
+            .filter((item)=> item.popular && item.inStock)
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 6)
     },[books])
