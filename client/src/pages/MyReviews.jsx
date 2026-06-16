@@ -3,6 +3,7 @@ import toast from 'react-hot-toast'
 import { FaHeart, FaRegCommentDots, FaStar, FaTrash } from 'react-icons/fa'
 import { MdRateReview } from 'react-icons/md'
 import { ShopContext } from '../context/ShopContext'
+import { getBookGenreLabels } from '../assets/genreTree'
 
 const MyReviews = () => {
   const { axios, user, navigate } = useContext(ShopContext)
@@ -127,7 +128,7 @@ const MyReviews = () => {
                     <div className='min-w-0'>
                       <p className='medium-14'>Reviewed Book</p>
                       <h3 className='bold-16 mt-1 line-clamp-3'>{review.productId?.name ?? 'Deleted book'}</h3>
-                      <p className='mt-1'>{review.productId?.category ?? 'No category'}</p>
+                      <p className='mt-1'>{getBookGenreLabels(review.productId).join(', ') || 'No genre'}</p>
                     </div>
                   </div>
                 </div>

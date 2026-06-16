@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { ShopContext } from '../../context/ShopContext'
 import toast from 'react-hot-toast'
+import { getBookGenreLabels } from '../../assets/genreTree'
 
 const ProductList = () => {
   const {books, currency, axios, fetchBooks} = useContext(ShopContext)
@@ -25,7 +26,7 @@ const ProductList = () => {
         <div className='grid grid-cols-[1fr_3.5fr_1fr_1fr_1fr] items-center py-1 px-2 bg-white bold-14 sm:bold-15 mb-1 rounded'>
           <h5>Image</h5>
           <h5>Name</h5>
-          <h5>Category</h5>
+          <h5>Genres</h5>
           <h5>Price</h5>
           <h5>InStock</h5>
         </div>
@@ -34,7 +35,7 @@ const ProductList = () => {
           <div key={book._id} className='grid grid-cols-[1fr_3.5fr_1fr_1fr_1fr] items-center gap-2 p-2 bg-white rounded-lg'>
             <img src={book.image[0]} alt={book.name} className='w-12 bg-primary rounded' />
             <h5 className="text-sm font-semibold">{book.name}</h5>
-            <p className="text-sm font-semibold">{book.category}</p>
+            <p className="text-sm font-semibold line-clamp-2">{getBookGenreLabels(book).join(', ') || 'No genre'}</p>
             <div className="text-sm font-semibold">{currency}{book.offerPrice}</div>
             <div>
               <label className='relative inline-flex items-center cursor-pointer text-gray-900 gap-3'>

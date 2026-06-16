@@ -3,6 +3,7 @@ import { ShopContext } from '../context/ShopContext'
 import Title from './Title'
 import { TbShoppingBagPlus } from 'react-icons/tb'
 import featuredBooksImg from '../assets/featured-books.png'
+import { getBookGenreDisplayLabels } from '../assets/genreTree'
 
 const FeaturedBooks = () => {
   const {books, currency, addToCart} = useContext(ShopContext)
@@ -23,7 +24,7 @@ const FeaturedBooks = () => {
             <div className='flex flex-col justify-between flex-1'>
               <div className='space-y-1'>
                 <h3 className='text-xl font-semibold text-gray-800 line-clamp-1'>{book?.name}</h3>
-                <p className='text-sm'>{book?.category}</p>
+                <p className='text-sm'>{getBookGenreDisplayLabels(book).join(', ') || 'No genre'}</p>
               </div>
               <div className='flex items-center gap-3 sm:mt-2'>
                 <h4 className='text-lg font-bold text-secondary'>{currency}{book?.offerPrice}.00</h4>

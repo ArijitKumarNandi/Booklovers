@@ -6,6 +6,29 @@ import User from "../models/User.js"
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
+const getArray = (value) => Array.isArray(value) ? value.filter(Boolean) : []
+
+const normalizeProductTaxonomy = (productData) => {
+    const genrePaths = getArray(productData.genrePaths)
+    const genres = getArray(productData.genres)
+    const subgenres = getArray(productData.subgenres)
+
+    if(genrePaths.length === 0 && productData.category){
+        genrePaths.push(productData.category)
+    }
+
+    const rootsFromPaths = genrePaths.map((path) => path.split(" > ")[0]).filter(Boolean)
+    const subgenresFromPaths = genrePaths.flatMap((path) => path.split(" > ").slice(1)).filter(Boolean)
+
+    return {
+        ...productData,
+        category: rootsFromPaths[0] || productData.category || "",
+        genres: [...new Set([...genres, ...rootsFromPaths])],
+        subgenres: [...new Set([...subgenres, ...subgenresFromPaths])],
+        genrePaths: [...new Set(genrePaths)],
+    }
+}
+
 const parseAiProductInfo = (text) => {
     const cleanText = text?.replace(/```(?:json)?|```/gi, "").trim()
 
@@ -148,9 +171,9 @@ export const addProduct = async (req,res)=>{
             })
         )
 
-        console.log(productData)
+        const normalizedProductData = normalizeProductTaxonomy(productData)
 
-        await Product.create({...productData, image:imagesUrl})
+        await Product.create({...normalizedProductData, image:imagesUrl})
 
         const users = await User.find({}).select("_id")
         if(users.length > 0){
@@ -196,7 +219,12 @@ export const recommendProducts = async (req,res)=>{
             $or:[
                 {name: searchRegex},
                 {description: searchRegex},
-                {category: searchRegex}
+                {author: searchRegex},
+                {publisher: searchRegex},
+                {language: searchRegex},
+                {genres: searchRegex},
+                {subgenres: searchRegex},
+                {genrePaths: searchRegex}
             ]
         }).limit(20)
 

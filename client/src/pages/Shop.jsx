@@ -2,23 +2,34 @@ import React, { useContext, useEffect, useState } from 'react'
 import Title from '../components/Title'
 import Item from '../components/Item'
 import { ShopContext } from '../context/ShopContext'
+import { genreTree, matchesGenreFilter } from '../assets/genreTree'
 
 
 const Shop = () => {
   const {books, searchQuery} = useContext(ShopContext)
   const [filteredBooks, setFilteredBooks] = useState([])
   const [currPage, setCurrPage] = useState(1)
+  const [selectedGenre, setSelectedGenre] = useState('')
   const itemsPerPage = 10
 
   useEffect(()=>{
-    if(searchQuery.length > 0){
-      setFilteredBooks(books.filter((book)=> book.name.toLowerCase().includes(searchQuery.toLowerCase())))
-    }else{
-      setFilteredBooks(books);
-    }
+    const query = searchQuery.toLowerCase()
+    const result = books.filter((book) => {
+      const searchText = [
+        book.name,
+        book.description,
+        ...(book.genres ?? []),
+        ...(book.subgenres ?? []),
+        ...(book.genrePaths ?? []),
+        book.category,
+      ].filter(Boolean).join(' ').toLowerCase()
+
+      return (!query || searchText.includes(query)) && matchesGenreFilter(book, selectedGenre)
+    })
+    setFilteredBooks(result)
 
     setCurrPage(1) // Reset to first page on search/filter change
-  }, [books, searchQuery])
+  }, [books, searchQuery, selectedGenre])
 
   const totalPages = Math.ceil(filteredBooks.filter((b) => b.inStock).length / itemsPerPage);
   useEffect(()=>{
@@ -27,7 +38,28 @@ const Shop = () => {
 
   return (
     <div className='max-padd-container py-16 pt-28'>
-      <Title title1={"All"} title2={"Books"} titleStyles={"pb-10"} />
+      <div className='mb-8 rounded-xl bg-primary p-4 shadow-sm ring-1 ring-slate-900/5'>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'>
+          <div>
+            <h2 className='bold-18'>Filter Books By Genre</h2>
+            <p className='mt-1'>Choose a genre to quickly find books that match your reading mood.</p>
+          </div>
+          <div className='flex flex-col gap-2 sm:min-w-80'>
+            <label htmlFor='genre-filter' className='medium-14'>Genre</label>
+            <select
+              id='genre-filter'
+              value={selectedGenre}
+              onChange={(event) => setSelectedGenre(event.target.value)}
+              className='rounded-lg bg-white px-3 py-2 outline-none ring-1 ring-slate-900/10'
+            >
+              <option value=''>All genres</option>
+              {genreTree.map((genre) => (
+                <option key={genre.name} value={genre.name}>{genre.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
       <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 sm:gap-8'>
         {filteredBooks.length > 0 ? (
           filteredBooks.filter((book)=>book.inStock).slice((currPage - 1) * itemsPerPage, currPage * itemsPerPage).map((book)=>

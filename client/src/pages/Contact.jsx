@@ -75,7 +75,7 @@ const Contact = () => {
             </div>
             <div className='rounded-lg bg-white/70 p-4'>
               <h3 className='bold-16'>For recommendations</h3>
-              <p className='mt-1'>Tell us your favorite category and reading mood.</p>
+              <p className='mt-1'>Tell us your favorite genre, subgenre, and reading mood.</p>
             </div>
           </div>
         </div>

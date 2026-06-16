@@ -4,6 +4,7 @@ import { FaHeart, FaRegHeart } from 'react-icons/fa'
 import { FiShoppingBag, FiTrash2 } from 'react-icons/fi'
 import { TbSparkles } from 'react-icons/tb'
 import { ShopContext } from '../context/ShopContext'
+import { getBookGenreDisplayLabels } from '../assets/genreTree'
 
 const Wishlist = () => {
   const { axios, user, navigate, currency, addToCart, toggleWishlist, setWishlistItems } = useContext(ShopContext)
@@ -112,7 +113,7 @@ const Wishlist = () => {
         <div className='grid gap-5 sm:grid-cols-2 xl:grid-cols-3'>
           {wishlist.map((book) => (
             <article key={book._id} className='surface-card overflow-hidden rounded-xl shadow-sm ring-1 ring-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-md'>
-              <button onClick={() => navigate(`/shop/${book.category}/${book._id}`)} className='block w-full bg-primary p-5 text-left'>
+              <button onClick={() => navigate(`/shop/book/${book._id}`)} className='block w-full bg-primary p-5 text-left'>
                 <div className='mx-auto flex h-64 max-w-[190px] items-center justify-center rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-900/5'>
                   <img src={book.image?.[0]} alt={book.name} className='max-h-full rounded-lg object-contain' />
                 </div>
@@ -121,7 +122,7 @@ const Wishlist = () => {
               <div className='p-5'>
                 <div className='mb-3 flex items-start justify-between gap-3'>
                   <div className='min-w-0'>
-                    <p className='medium-14 text-secondary'>{book.category}</p>
+                    <p className='medium-14 text-secondary'>{getBookGenreDisplayLabels(book).join(', ') || 'No genre'}</p>
                     <h3 className='bold-18 mt-1 line-clamp-2'>{book.name}</h3>
                   </div>
                   <span className='flexCenter h-10 w-10 shrink-0 rounded-full bg-red-50 text-red-500 ring-1 ring-red-100'>

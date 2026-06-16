@@ -19,7 +19,7 @@ export const listReviews = async (req, res) => {
 export const listAllReviews = async (req, res) => {
     try {
         const reviews = await Review.find({})
-            .populate("productId", "name image category")
+            .populate("productId", "name image category genres subgenres genrePaths")
             .populate("userId", "name email avatar")
             .sort({createdAt: -1})
 
@@ -33,7 +33,7 @@ export const listAllReviews = async (req, res) => {
 export const listMyReviews = async (req, res) => {
     try {
         const reviews = await Review.find({userId: req.userId})
-            .populate("productId", "name image category")
+            .populate("productId", "name image category genres subgenres genrePaths")
             .sort({createdAt: -1})
 
         res.json({success: true, reviews})

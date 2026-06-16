@@ -18,7 +18,7 @@ const Cart = () => {
               <span className='flexCenter h-12 w-12 rounded-full bg-primary text-2xl text-secondary'><FiShoppingBag /></span>
               <div>
                 <h1 className='bold-32'>Cart Overview</h1>
-                <p className='mt-1'>Review your books before placing the order.</p>
+                <p className='mt-1'>Check your selected books, update quantities, or remove items before checkout.</p>
               </div>
             </div>
           </div>

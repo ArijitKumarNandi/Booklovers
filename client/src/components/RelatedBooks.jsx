@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import Title from './Title'
 import Item from './Item'
+import { getBookGenrePaths } from '../assets/genreTree'
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
 
@@ -19,7 +20,11 @@ const RelatedBooks = ({book, id}) => {
   useEffect(()=>{
     if(books.length > 0 && book){
       let booksCopy = books.slice()
-      booksCopy = booksCopy.filter((item)=>item.category === book.category && id !== item._id)
+      const currentPaths = getBookGenrePaths(book)
+      booksCopy = booksCopy.filter((item) => {
+        if(id === item._id) return false
+        return getBookGenrePaths(item).some((path) => currentPaths.includes(path))
+      })
       setRelatedBooks(booksCopy.slice(0, 6))
     }
   }, [books, book, id])

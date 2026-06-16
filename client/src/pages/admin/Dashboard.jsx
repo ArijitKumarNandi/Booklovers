@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
+import { Link } from 'react-router-dom'
 import { FaBoxOpen, FaChartLine, FaShoppingBag, FaTruck, FaUsers } from 'react-icons/fa'
-import { MdDeliveryDining, MdLocalShipping, MdOutlineDoneAll } from 'react-icons/md'
+import { MdDeliveryDining, MdLocalShipping, MdOutlineDoneAll, MdRateReview } from 'react-icons/md'
 import { ShopContext } from '../../context/ShopContext'
 
 const emptyDashboard = {
@@ -19,6 +20,7 @@ const emptyDashboard = {
   },
   monthlySales: [],
   topProducts: [],
+  recentActivities: [],
 }
 
 const Dashboard = () => {
@@ -76,6 +78,25 @@ const Dashboard = () => {
     { label: 'Out for delivery', value: dashboard.orderStatus.outForDelivery, icon: <MdDeliveryDining />, color: 'bg-yellow-400', panel: 'bg-amber-400/15 text-amber-700' },
     { label: 'Delivered', value: dashboard.orderStatus.delivered, icon: <MdOutlineDoneAll />, color: 'bg-green-500', panel: 'bg-emerald-500/10 text-emerald-700' },
   ]
+
+  const getTimeAgo = (date) => {
+    const seconds = Math.max(Math.floor((Date.now() - new Date(date).getTime()) / 1000), 0)
+    const intervals = [
+      { label: 'year', value: 31536000 },
+      { label: 'month', value: 2592000 },
+      { label: 'day', value: 86400 },
+      { label: 'hour', value: 3600 },
+      { label: 'minute', value: 60 },
+    ]
+    const interval = intervals.find((item) => seconds >= item.value)
+
+    if(!interval) return 'Just now'
+
+    const count = Math.floor(seconds / interval.value)
+    return `${count} ${interval.label}${count === 1 ? '' : 's'} ago`
+  }
+
+  const recentActivities = dashboard.recentActivities ?? []
 
   return (
     <div className='m-2 h-[97vh] w-full overflow-y-scroll rounded-xl bg-primary px-3 py-8 sm:px-6 lg:w-4/5'>
@@ -164,31 +185,36 @@ const Dashboard = () => {
           </div>
 
           <section className='surface-card rounded-xl p-5 shadow-sm ring-1 ring-amber-500/15'>
-            <div className='flex items-center gap-3'>
-              <span className='h-8 w-1.5 rounded-full bg-amber-500' />
-              <h2 className='bold-18'>Top Selling Products</h2>
+            <div className='flex items-center justify-between gap-3'>
+              <div className='flex items-center gap-3'>
+                <span className='h-8 w-1.5 rounded-full bg-amber-500' />
+                <h2 className='bold-18'>Recent Activities</h2>
+              </div>
+              <span className='rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white'>Live</span>
             </div>
-            <div className='mt-5 overflow-x-auto'>
-              {dashboard.topProducts.length === 0 ? (
-                <p>No product sales yet.</p>
-              ) : (
-                <div className='min-w-[640px]'>
-                  <div className='grid items-center rounded-lg px-4 py-3 bold-14' style={{ gridTemplateColumns: '80px 96px minmax(0, 1fr) 120px', background: 'linear-gradient(90deg, rgba(245,158,11,0.18), rgba(14,165,233,0.12))' }}>
-                    <span>Rank</span>
-                    <span>Image</span>
-                    <span>Book Name</span>
-                    <span>Total Sold</span>
-                  </div>
-                  {dashboard.topProducts.slice(0, 3).map((product, index) => (
-                    <div key={product.id} className='grid items-center border-b border-[var(--theme-border)] px-4 py-3' style={{ gridTemplateColumns: '80px 96px minmax(0, 1fr) 120px' }}>
-                      <span className='bold-16 text-secondary'>{index + 1}</span>
-                      <img src={product.image} alt={product.title} className='h-11 w-11 rounded-lg bg-primary object-cover' />
-                      <span className='medium-14 line-clamp-1'>{product.title}</span>
-                      <span className='bold-15'>{product.totalSold}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <div className='mt-5 grid gap-3'>
+              {recentActivities.length === 0 ? (
+                <p>No recent orders or reviews yet.</p>
+              ) : recentActivities.map((activity) => (
+                <Link
+                  key={`${activity.type}-${activity.id}`}
+                  to={activity.to}
+                  className='grid items-center gap-4 rounded-xl border border-transparent px-4 py-3 transition hover:border-[var(--theme-border)] hover:bg-primary/70 sm:grid-cols-[48px_minmax(0,1fr)_96px]'
+                >
+                  <span className={`flexCenter h-11 w-11 rounded-full text-lg ${activity.type === 'Order' ? 'bg-orange-100 text-orange-600' : 'bg-violet-100 text-violet-600'}`}>
+                    {activity.type === 'Order' ? <FaShoppingBag /> : <MdRateReview />}
+                  </span>
+                  <span className='min-w-0'>
+                    <span className='block font-semibold text-[var(--theme-text)]'>
+                      {activity.user} <span className='font-normal'>{activity.action}</span>
+                    </span>
+                    <span className='mt-1 block text-sm text-gray-50'>{getTimeAgo(activity.createdAt)}</span>
+                  </span>
+                  <span className={`justify-self-start rounded-full px-3 py-1 text-sm font-semibold sm:justify-self-end ${activity.type === 'Order' ? 'bg-orange-500/15 text-orange-600' : 'bg-secondary/15 text-secondary'}`}>
+                    {activity.type}
+                  </span>
+                </Link>
+              ))}
             </div>
           </section>
 
@@ -204,7 +230,7 @@ const Dashboard = () => {
                   <div className='grid items-center rounded-lg px-4 py-3 bold-14' style={{ gridTemplateColumns: '96px minmax(0, 1fr) 180px 120px', background: 'linear-gradient(90deg, rgba(14,165,233,0.16), rgba(34,197,94,0.12))' }}>
                     <span>Image</span>
                     <span>Title</span>
-                    <span>Category</span>
+                    <span>Genre</span>
                     <span>Total Sold</span>
                   </div>
                   {dashboard.topProducts.length === 0 ? (
@@ -213,7 +239,7 @@ const Dashboard = () => {
                     <div key={product.id} className='grid items-center border-b border-[var(--theme-border)] px-4 py-3' style={{ gridTemplateColumns: '96px minmax(0, 1fr) 180px 120px' }}>
                       <img src={product.image} alt={product.title} className='h-12 w-12 rounded-lg bg-primary object-cover' />
                       <span className='medium-14 line-clamp-1'>{product.title}</span>
-                      <span>{product.category}</span>
+                      <span>{product.genre}</span>
                       <span className='bold-15'>{product.totalSold}</span>
                     </div>
                   ))}

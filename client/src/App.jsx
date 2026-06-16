@@ -47,6 +47,8 @@ const App = () => {
         <Route path='/' element={<Home />} />
         <Route path='/shop' element={<Shop />} />
         <Route path='/recommendations' element={<Recommendations />} />
+        <Route path='/shop/genre/:genrePath' element={<Categoryshop />} />
+        <Route path='/shop/book/:id' element={<ProductDetails />} />
         <Route path='/shop/:category' element={<Categoryshop />} />
         <Route path='/shop/:category/:id' element={<ProductDetails />} />
         <Route path='/blog' element={<Blog />} />

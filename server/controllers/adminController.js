@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken"
 import Order from "../models/Order.js"
 import Product from "../models/Product.js"
+import Review from "../models/Review.js"
 import User from "../models/User.js"
 
 const cookieOptions = {
@@ -89,7 +90,7 @@ export const adminDashboard = async (req,res)=>{
                 const existing = productSales.get(productId) || {
                     id: productId,
                     title: product.name,
-                    category: product.category,
+                    genre: product.genrePaths?.[0] || product.genres?.[0] || product.category || "No genre",
                     image: product.image?.[0] || "",
                     totalSold: 0,
                 }
@@ -116,6 +117,65 @@ export const adminDashboard = async (req,res)=>{
             }
         })
 
+        const [recentOrders, recentReviews] = await Promise.all([
+            Order.find(paidOrderFilter)
+                .populate("items.product address")
+                .sort({createdAt: -1})
+                .limit(5),
+            Review.find({})
+                .populate("productId", "name")
+                .populate("userId", "name")
+                .sort({createdAt: -1})
+                .limit(5),
+        ])
+
+        const getCustomerName = (order) => {
+            const address = order.address
+            if(address?.firstName || address?.lastName){
+                return `${address.firstName ?? ""} ${address.lastName ?? ""}`.trim()
+            }
+            return "A customer"
+        }
+
+        const getBookSummary = (items = []) => {
+            const bookNames = items
+                .map((item) => item.product?.name)
+                .filter(Boolean)
+            const totalQuantity = items.reduce((total, item) => total + (item.quantity ?? 0), 0)
+
+            if(bookNames.length === 0){
+                return `${totalQuantity || 1} book${(totalQuantity || 1) === 1 ? "" : "s"}`
+            }
+            if(bookNames.length === 1){
+                return `${totalQuantity || 1} book${(totalQuantity || 1) === 1 ? "" : "s"}, ${bookNames[0]}`
+            }
+            return `${totalQuantity || bookNames.length} books, ${bookNames[0]} and ${bookNames.length - 1} more`
+        }
+
+        const orderActivities = recentOrders.map((order) => ({
+            id: order._id,
+            user: getCustomerName(order),
+            action: order.paymentMethod === "COD"
+                ? `ordered ${getBookSummary(order.items)}`
+                : `made payment and ordered ${getBookSummary(order.items)}`,
+            type: "Order",
+            to: "/admin/orders",
+            createdAt: order.createdAt,
+        }))
+
+        const reviewActivities = recentReviews.map((review) => ({
+            id: review._id,
+            user: review.userId?.name ?? "A customer",
+            action: `reviewed ${review.productId?.name ?? "a book"}`,
+            type: "Review",
+            to: "/admin/reviews",
+            createdAt: review.createdAt,
+        }))
+
+        const recentActivities = [...orderActivities, ...reviewActivities]
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 5)
+
         return res.json({
             success:true,
             dashboard:{
@@ -129,6 +189,7 @@ export const adminDashboard = async (req,res)=>{
                 orderStatus,
                 monthlySales,
                 topProducts,
+                recentActivities,
             }
         })
     } catch (error) {

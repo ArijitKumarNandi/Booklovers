@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import {TbShoppingBagPlus} from 'react-icons/tb'
 import { ShopContext } from '../context/ShopContext'
+import { getBookGenreDisplayLabels } from '../assets/genreTree'
 
 const Item = ({ book, fromHero }) => {
 
@@ -9,7 +10,7 @@ const Item = ({ book, fromHero }) => {
   return book ? (
     <div 
     onClick={()=>{
-      navigate(`/shop/${book.category}/${book._id}`)
+      navigate(`/shop/book/${book._id}`)
       scrollTo(0, 0)
     }} 
     className={`overflow-hidden sm:p-4 ${fromHero ? "surface-card" : "sm:bg-primary"} rounded-xl`}>
@@ -23,6 +24,7 @@ const Item = ({ book, fromHero }) => {
           <h4 className='h5 line-clamp-1'>{book.name}</h4>
           <p className='text-secondary bold-15'>{currency}{book.offerPrice}.00</p>
         </div>
+        <p className='mt-1 text-xs text-secondary line-clamp-1'>{getBookGenreDisplayLabels(book).join(', ') || 'Uncategorized'}</p>
         <div className='flex justify-between items-start gap-2 mt-1'>
           <p className='line-clamp-1'>{book.description}</p>
           <button onClick={(e)=>{addToCart(book._id); e.stopPropagation()}} className='cursor-pointer'><TbShoppingBagPlus className='text-xl'/></button>

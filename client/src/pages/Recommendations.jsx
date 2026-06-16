@@ -55,7 +55,7 @@ const Recommendations = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             type='text'
-            placeholder='Type a title, author, category, or keyword...'
+            placeholder='Type a title, author, genre, subgenre, or keyword...'
             className='w-full bg-transparent outline-none regular-15 placeholder:text-gray-50'
           />
         </div>
@@ -66,7 +66,7 @@ const Recommendations = () => {
       {!query.trim() && (
         <div className='bg-primary rounded-xl p-8 max-w-2xl'>
           <h3 className='h4 mb-2'>Start typing to get recommendations</h3>
-          <p>Search by the text stored with your books, such as title, description, or category.</p>
+          <p>Search by the text stored with your books, such as title, description, genre, or subgenre.</p>
         </div>
       )}
 

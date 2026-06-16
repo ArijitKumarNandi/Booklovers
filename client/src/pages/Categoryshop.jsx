@@ -1,8 +1,9 @@
-import React, { use, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Title from '../components/Title'
 import Item from '../components/Item'
 import { ShopContext } from '../context/ShopContext'
 import { useParams } from 'react-router-dom'
+import { matchesGenreFilter } from '../assets/genreTree'
 
 
 const CategoryShop = () => {
@@ -10,25 +11,34 @@ const CategoryShop = () => {
   const [filteredBooks, setFilteredBooks] = useState([])
   const [currPage, setCurrPage] = useState(1)
   const itemsPerPage = 10
-  const {category} = useParams()
+  const {category, genrePath} = useParams()
+  const selectedGenre = genrePath ? decodeURIComponent(genrePath).split(' > ').pop() : category
 
   
 
   useEffect(()=>{
     let result=books;
 
-    // Filter by category from URL
-    if(category){
-      result = result.filter((book)=> book.category.toLowerCase() === category.toLocaleLowerCase())
+    // Filter by genre from URL. The category fallback keeps old links working.
+    if(selectedGenre){
+      result = result.filter((book) => matchesGenreFilter(book, selectedGenre))
     }
 
     if(searchQuery.length > 0){
-      setFilteredBooks(result= result.filter((book)=> book.name.toLowerCase().includes(searchQuery.toLowerCase())))
+      const query = searchQuery.toLowerCase()
+      setFilteredBooks(result= result.filter((book)=> [
+        book.name,
+        book.description,
+        ...(book.genres ?? []),
+        ...(book.subgenres ?? []),
+        ...(book.genrePaths ?? []),
+        book.category,
+      ].filter(Boolean).join(' ').toLowerCase().includes(query)))
     }
     setFilteredBooks(result);
 
     setCurrPage(1) // Reset to first page on search/filter change
-  }, [books, searchQuery, category]);
+  }, [books, searchQuery, selectedGenre]);
 
   const totalPages = Math.ceil(filteredBooks.filter((b) => b.inStock).length / itemsPerPage);
   useEffect(()=>{
@@ -37,7 +47,7 @@ const CategoryShop = () => {
 
   return (
     <div className='max-padd-container py-16 pt-28'>
-      <Title title1={category} title2={"Books"} titleStyles={"pb-10"} />
+      <Title title1={selectedGenre} title2={"Books"} titleStyles={"pb-10"} />
       <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 sm:gap-8'>
         {filteredBooks.length > 0 ? (
           filteredBooks.filter((book)=>book.inStock).slice((currPage - 1) * itemsPerPage, currPage * itemsPerPage).map((book)=>
