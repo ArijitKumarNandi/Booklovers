@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import { useEffect } from 'react'
 import toast from 'react-hot-toast'
@@ -8,7 +8,7 @@ const MyOrders = () => {
   const {currency, user, axios} = useContext(ShopContext)
   const [orders, setOrders] = useState([])
 
-  const loadOrderData = async ()=>{
+  const loadOrderData = useCallback(async ()=>{
     if(!user) return
     try {
       const {data} = await axios.post("/api/order/userorders")
@@ -18,13 +18,13 @@ const MyOrders = () => {
         toast.error(data.message)
       }
     } catch (error) {
-      console.log(error)
+      toast.error(error.message)
     }
-  }
+  }, [axios, user])
 
   useEffect(()=>{
     loadOrderData()
-  },[user])
+  },[loadOrderData])
 
   return (
     <div className='max-padd-container py-16 pt-28'>

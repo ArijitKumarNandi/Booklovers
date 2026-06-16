@@ -12,7 +12,6 @@ const AddressForm = () => {
     const name = e.target.name;
     const value = e.target.value;
     setAddress((data) => ({ ...data, [name]: value}));
-    console.log(address);
   };
 
   const onSubmitHandler = async (e)=>{
@@ -34,7 +33,7 @@ const AddressForm = () => {
     if(!user){
       navigate("/cart")
     }
-  }, [])
+  }, [navigate, user])
   return (
     <div className='max-padd-container py-16 pt-28'>
       {/* CONTAINER */}

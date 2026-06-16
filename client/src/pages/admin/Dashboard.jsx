@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 import { FaBoxOpen, FaChartLine, FaShoppingBag, FaTruck, FaUsers } from 'react-icons/fa'
@@ -32,7 +32,7 @@ const Dashboard = () => {
     maximumFractionDigits: 0,
   }), [])
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = useCallback(async () => {
     try {
       const { data } = await axios.get('/api/admin/dashboard')
       if (data.success) {
@@ -45,11 +45,11 @@ const Dashboard = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [axios])
 
   useEffect(() => {
     fetchDashboard()
-  }, [])
+  }, [fetchDashboard])
 
   const maxRevenue = Math.max(...dashboard.monthlySales.map((item) => item.revenue), 1)
   const linePoints = dashboard.monthlySales.map((item, index) => {

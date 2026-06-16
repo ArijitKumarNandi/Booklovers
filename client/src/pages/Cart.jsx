@@ -5,7 +5,7 @@ import { FiShoppingBag, FiTrash2 } from 'react-icons/fi'
 import CartTotal from '../components/CartTotal'
 
 const Cart = () => {
-  const {navigate, books, currency, cartItems, updateQuantity} = useContext(ShopContext);
+  const {books, currency, cartItems, updateQuantity} = useContext(ShopContext);
 
   return books && cartItems ? (
     <div className='max-padd-container py-16 pt-28'>

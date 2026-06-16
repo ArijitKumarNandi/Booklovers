@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { ShopContext } from '../../context/ShopContext'
 import toast from 'react-hot-toast'
 
@@ -6,7 +6,7 @@ const Orders = () => {
   const {currency, axios} = useContext(ShopContext)
   const [orders, setOrders] = useState([])
 
-  const fetchAllOrders = async ()=>{
+  const fetchAllOrders = useCallback(async ()=>{
     try {
       const { data } = await axios.post("/api/order/list")
       if (data.success) {
@@ -15,9 +15,9 @@ const Orders = () => {
         toast.error(data.message)
       }
     } catch (error) {
-      console.log(error)
+      toast.error(error.message)
     }
-  }
+  }, [axios])
 
   const statusHandler = async (event, orderId)=>{
     try {
@@ -29,14 +29,13 @@ const Orders = () => {
         toast.error(data.message)
       }
     } catch (error) {
-      console.log(error)
+      toast.error(error.message)
     }
   }
 
   useEffect(()=>{
     fetchAllOrders()
-    console.log(orders)
-  }, [])
+  }, [fetchAllOrders])
 
   return (
     <div className='px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary overflow-y-scroll lg:w-4/5 rounded-xl'>

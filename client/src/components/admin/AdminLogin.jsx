@@ -30,7 +30,7 @@ const AdminLogin = () => {
     if(isAdmin){
         navigate('/admin')
     }
-  }, [isAdmin]);
+  }, [isAdmin, navigate]);
 
     return !isAdmin && <div className='fixed top-0 bottom-0 left-0 right-0 z-40 flex items-center text-sm text-gray-600 text-[85%]'>
         <form onSubmit={onSubmitHandler} className='flex flex-col gap-4 m-auto items-start p-8 py-12 w-80 sm:w-[352px] rounded-lg shadow-xl border border-gray-200 bg-white'>

@@ -49,7 +49,7 @@ const ShopContextProvider = ({children}) => {
           setCartItems({})
           setWishlistItems([])
         }
-      } catch (error) {
+      } catch {
           setUser(null)
           setCartItems({})
           setWishlistItems([])
@@ -61,7 +61,7 @@ const ShopContextProvider = ({children}) => {
       try {
         const {data} = await axios.get('/api/admin/is-auth')
         setIsAdmin(data.success)
-      } catch (error) {
+      } catch {
         setIsAdmin(false)
       }
     }
@@ -108,12 +108,8 @@ const ShopContextProvider = ({children}) => {
     const getCartCount = ()=>{
       let totalCount = 0
       for(const itemId in cartItems){
-        try {
-          if(cartItems[itemId] > 0){
-            totalCount += cartItems[itemId]
-          }
-        } catch (error) {
-          console.log(error)
+        if(cartItems[itemId] > 0){
+          totalCount += cartItems[itemId]
         }
       }
       return totalCount

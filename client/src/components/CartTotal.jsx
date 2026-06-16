@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import toast from 'react-hot-toast'
 import { useEffect } from 'react'
@@ -10,7 +10,7 @@ const CartTotal = () => {
   const [showAddress, setShowAddress] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState(null)
   
-  const getAddress = async ()=>{
+  const getAddress = useCallback(async ()=>{
     try {
       const {data} = await axios.get("/api/address/get")
       if(data.success){
@@ -24,7 +24,7 @@ const CartTotal = () => {
     } catch (error) {
       toast.error(error.message)
     }
-  }
+  }, [axios])
 
   const placeOrder = async ()=>{
     try {
@@ -71,7 +71,7 @@ const CartTotal = () => {
     if(user){
       getAddress()
     }
-  }, [user])
+  }, [getAddress, user])
 
   return (
     <div>

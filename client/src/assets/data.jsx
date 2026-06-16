@@ -602,7 +602,6 @@ export const dummyBooks = [
     image: [book_42],
     offerPrice: 21,
     price: 35,
-    price: 35,
     description: "Brave the icy tundra and uncover secrets buried beneath snow and time in this tale.",
     category: "Adventure",
     date: 1716634345448,

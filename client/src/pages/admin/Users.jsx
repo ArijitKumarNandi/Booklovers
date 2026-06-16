@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { FiTrash2, FiUsers } from 'react-icons/fi'
 import userImg from '../../assets/user.png'
@@ -10,7 +10,7 @@ const Users = () => {
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState('')
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const { data } = await axios.get('/api/admin/users')
       if (data.success) {
@@ -23,7 +23,7 @@ const Users = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [axios])
 
   const deleteUser = async (userId) => {
     const confirmed = window.confirm('Delete this user?')
@@ -47,7 +47,7 @@ const Users = () => {
 
   useEffect(() => {
     fetchUsers()
-  }, [])
+  }, [fetchUsers])
 
   return (
     <div className='m-2 h-[97vh] w-full overflow-y-scroll rounded-xl bg-primary px-3 py-8 sm:px-6 lg:w-4/5'>

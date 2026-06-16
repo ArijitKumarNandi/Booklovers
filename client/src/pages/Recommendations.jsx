@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 import { IoSearchOutline } from 'react-icons/io5'
 import Item from '../components/Item'
 import Title from '../components/Title'
@@ -33,7 +34,7 @@ const Recommendations = () => {
           setHasSearched(true)
         }
       } catch (error) {
-        console.log(error.message)
+        toast.error(error.message)
         setRecommendedBooks([])
         setHasSearched(true)
       } finally {
