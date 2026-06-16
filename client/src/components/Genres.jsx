@@ -71,12 +71,12 @@ const Genres = () => {
         ))}
       </div>
 
-      <div className='flexCenter mt-8 flex-wrap gap-2'>
+      <div className='flexCenter mt-8 flex-nowrap gap-1.5 sm:flex-wrap sm:gap-2'>
         <button
           type='button'
           disabled={page === 1}
           onClick={() => setPage((value) => Math.max(value - 1, 1))}
-          className={`${page === 1 ? 'cursor-not-allowed opacity-60' : ''} rounded-full bg-gray-500 px-4 py-2 font-semibold text-white shadow-sm`}
+          className={`${page === 1 ? 'cursor-not-allowed opacity-60' : ''} rounded-full bg-gray-500 px-3 py-2 text-sm font-semibold text-white shadow-sm sm:px-4 sm:text-base`}
         >
           Previous
         </button>
@@ -85,7 +85,7 @@ const Genres = () => {
             key={index + 1}
             type='button'
             onClick={() => setPage(index + 1)}
-            className={`flexCenter h-10 w-10 rounded-full font-semibold shadow-sm ${page === index + 1 ? 'bg-secondary text-white' : 'bg-primary text-gray-900'}`}
+            className={`flexCenter h-9 w-9 rounded-full text-sm font-semibold shadow-sm sm:h-10 sm:w-10 sm:text-base ${page === index + 1 ? 'bg-secondary text-white' : 'bg-primary text-gray-900'}`}
           >
             {index + 1}
           </button>
@@ -94,7 +94,7 @@ const Genres = () => {
           type='button'
           disabled={page === totalPages}
           onClick={() => setPage((value) => Math.min(value + 1, totalPages))}
-          className={`${page === totalPages ? 'cursor-not-allowed opacity-60' : ''} rounded-full bg-yellow-300 px-4 py-2 font-semibold text-gray-900 shadow-sm`}
+          className={`${page === totalPages ? 'cursor-not-allowed opacity-60' : ''} rounded-full bg-yellow-300 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm sm:px-4 sm:text-base`}
         >
           Next
         </button>
