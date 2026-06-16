@@ -71,16 +71,16 @@ const ProductDetails = () => {
         {/*BOOK DATA*/}
         <div className='flex gap-10 flex-col xl:flex-row my-6'>
           {/*IMAGE*/}
-          <div className='flex w-full max-w-[480px] gap-x-3 rounded-xl'>
-            <div className='flex-1 flexCenter flex-col gap-[7px] flex-wrap'>
+          <div className='flex w-full max-w-[480px] gap-x-3 rounded-xl max-sm:max-w-full'>
+            <div className='flexCenter w-20 shrink-0 flex-col gap-[7px] flex-wrap sm:flex-1'>
               {book.image.map((item, index)=>(
                 <div key={index}>
                   <img onClick={()=>setSelectedImage({ bookId: id, src: item })} src={item} alt="bookImg" className='h-28 w-20 cursor-pointer rounded-lg object-cover overflow-hidden'/>
                 </div>
               ))}
             </div>
-            <div className='flex flex-[5]'>
-              <img src={image} alt="bookImg" className='h-[560px] w-full rounded-lg object-cover overflow-hidden'/>
+            <div className='flex flex-[5] min-w-0 rounded-lg bg-primary'>
+              <img src={image} alt="bookImg" className='h-auto max-h-[68vh] w-full rounded-lg object-contain overflow-hidden sm:h-[560px] sm:max-h-none sm:object-cover'/>
             </div>
           </div>
           {/*INFO*/}

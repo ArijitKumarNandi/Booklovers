@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
@@ -36,7 +36,12 @@ import Reviews from './pages/admin/Reviews'
 
 const App = () => {
   const {showUserLogin, isAdmin} = useContext(ShopContext)
-  const isAdminPath = useLocation().pathname.includes('admin')
+  const location = useLocation()
+  const isAdminPath = location.pathname.includes('admin')
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [location.pathname, location.search])
 
   return (
     <main className='app-shell'>
