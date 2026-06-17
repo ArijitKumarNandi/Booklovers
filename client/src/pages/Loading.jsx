@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 
 const Loading = () => {
 
-    const {axios, navigate} = useContext(ShopContext)
+    const {axios, navigate, fetchBooks} = useContext(ShopContext)
     let {search} = useLocation()
     const query = new URLSearchParams(search)
     const nextUrl = query.get('next')
@@ -16,6 +16,7 @@ const Loading = () => {
         const finishLoading = async () => {
             if(sessionId){
                 await axios.post('/api/order/stripe/confirm', {sessionId}).catch(() => {})
+                await fetchBooks()
             }
 
             setTimeout(() => {
@@ -26,7 +27,7 @@ const Loading = () => {
         if(nextUrl){
             finishLoading()
         }
-    }, [axios, navigate, nextUrl, sessionId])
+    }, [axios, fetchBooks, navigate, nextUrl, sessionId])
 
   return (
     <div className='flexCenter h-screen'>

@@ -2,11 +2,14 @@ import React, { useCallback, useContext, useState } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import { useEffect } from 'react'
 import toast from 'react-hot-toast'
-import { FiPackage, FiRefreshCw } from 'react-icons/fi'
+import { FiPackage, FiRefreshCw, FiX } from 'react-icons/fi'
 
 const MyOrders = () => {
   const {currency, user, axios} = useContext(ShopContext)
   const [orders, setOrders] = useState([])
+  const [requestModal, setRequestModal] = useState(null)
+  const [requestReason, setRequestReason] = useState('')
+  const [submittingRequest, setSubmittingRequest] = useState(false)
 
   const loadOrderData = useCallback(async ()=>{
     if(!user) return
@@ -25,6 +28,47 @@ const MyOrders = () => {
   useEffect(()=>{
     loadOrderData()
   },[loadOrderData])
+
+  const canCancelOrder = (order) => ['Order Placed', 'Packing'].includes(order.status)
+  const canReturnOrder = (order) => order.status === 'Delivered'
+  const isPaymentDone = (order) => order.isPaid || order.status === 'Delivered' || order.status === 'Return Requested' || order.status === 'Return Approved' || order.status === 'Return Rejected'
+
+  const openRequestModal = (order, type) => {
+    setRequestModal({order, type})
+    setRequestReason('')
+  }
+
+  const submitOrderRequest = async () => {
+    if(!requestModal) return
+
+    const reason = requestReason.trim()
+    if(!reason){
+      toast.error('Please enter a reason')
+      return
+    }
+
+    setSubmittingRequest(true)
+    try {
+      const endpoint = requestModal.type === 'cancel' ? '/api/order/cancel-request' : '/api/order/return-request'
+      const {data} = await axios.post(endpoint, {
+        orderId: requestModal.order._id,
+        reason,
+      })
+
+      if(data.success){
+        toast.success(data.message)
+        setRequestModal(null)
+        setRequestReason('')
+        await loadOrderData()
+      }else{
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setSubmittingRequest(false)
+    }
+  }
 
   return (
     <div className='max-padd-container py-16 pt-28'>
@@ -84,7 +128,7 @@ const MyOrders = () => {
               <div className='flex gap-4'>
                 <div className='flex items-center gap-x-2'>
                   <h5 className='medium-14'>Payment Status:</h5>
-                  <p>{order.isPaid ? "Done" : "Pending"}</p>
+                  <p>{isPaymentDone(order) ? "Done" : "Pending"}</p>
                   <div className='flex items-center gap-x-2'>
                     <h5 className='medium-14'>Method:</h5>
                     <p className='text-gray-400 text-sm'>{order.paymentMethod}</p>
@@ -112,10 +156,62 @@ const MyOrders = () => {
                 </div>
               </div>
               <button onClick={loadOrderData} className='btn-secondary !py-2 !px-4 !text-xs !rounded-full'>Track Order</button>
+              {canCancelOrder(order) && (
+                <button onClick={() => openRequestModal(order, 'cancel')} className='rounded-full bg-red-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-red-700'>
+                  Cancel Order
+                </button>
+              )}
+              {canReturnOrder(order) && (
+                <button onClick={() => openRequestModal(order, 'return')} className='rounded-full bg-amber-400 px-4 py-2 text-xs font-semibold text-gray-900 shadow-sm transition hover:bg-amber-300'>
+                  Request Return
+                </button>
+              )}
+            </div>
+          </div>
+          {order.cancelRequest?.reason && (
+            <div className='mt-4 rounded-xl bg-white p-3 ring-1 ring-slate-900/5'>
+              <h4 className='bold-14'>Cancellation Request</h4>
+              <p className='mt-1'>{order.cancelRequest.reason}</p>
+              {order.cancelRequest.adminNote && <p className='mt-1'>Admin note: {order.cancelRequest.adminNote}</p>}
+            </div>
+          )}
+          {order.returnRequest?.reason && (
+            <div className='mt-4 rounded-xl bg-white p-3 ring-1 ring-slate-900/5'>
+              <h4 className='bold-14'>Return Request ({order.returnRequest.status})</h4>
+              <p className='mt-1'>{order.returnRequest.reason}</p>
+              {order.returnRequest.adminNote && <p className='mt-1'>Admin note: {order.returnRequest.adminNote}</p>}
+            </div>
+          )}
+        </div>
+      ))}
+      {requestModal && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4'>
+          <div className='w-full max-w-md rounded-2xl bg-white p-5 shadow-xl'>
+            <div className='flex items-start justify-between gap-4'>
+              <div>
+                <h2 className='bold-22'>{requestModal.type === 'cancel' ? 'Cancel Order' : 'Request Return'}</h2>
+                <p className='mt-1'>Tell us the reason so admin can review your request.</p>
+              </div>
+              <button onClick={() => setRequestModal(null)} className='flexCenter h-9 w-9 rounded-full bg-primary text-lg'>
+                <FiX />
+              </button>
+            </div>
+            <textarea
+              value={requestReason}
+              onChange={(event) => setRequestReason(event.target.value)}
+              rows={4}
+              placeholder='Write your reason...'
+              className='mt-4 w-full rounded-xl bg-primary p-3 outline-none ring-1 ring-slate-900/10'
+            />
+            <div className='mt-4 flex justify-end gap-3'>
+              <button onClick={() => setRequestModal(null)} className='btn-light !rounded-xl'>Close</button>
+              <button onClick={submitOrderRequest} disabled={submittingRequest} className='btn-secondary !rounded-xl disabled:cursor-not-allowed disabled:opacity-60'>
+                {submittingRequest ? 'Submitting...' : 'Submit Request'}
+              </button>
             </div>
           </div>
         </div>
-      ))}
+      )}
     </div>
   )
 }

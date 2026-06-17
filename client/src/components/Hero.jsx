@@ -18,15 +18,15 @@ import { ShopContext } from '../context/ShopContext'
 
 
 const Hero = () => {
-    const {books} = useContext(ShopContext)
+    const {books, getAvailableQuantity} = useContext(ShopContext)
 
     // Getting popular books data
     const popularBooks = useMemo(() => {
         return books
-            .filter((item)=> item.popular && item.inStock)
+            .filter((item)=> item.popular && getAvailableQuantity(item) > 0)
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 6)
-    },[books])
+    },[books, getAvailableQuantity])
 
 
     return (

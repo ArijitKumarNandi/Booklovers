@@ -33,6 +33,7 @@ const AddProduct = () => {
   const genreDropdownRef = useRef(null)
   const subgenreDropdownRef = useRef(null)
   const languageDropdownRef = useRef(null)
+  const quantityDropdownRef = useRef(null)
   const [files, setFiles] = useState([])
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
@@ -40,6 +41,8 @@ const AddProduct = () => {
   const [publisher, setPublisher] = useState("")
   const [language, setLanguage] = useState("English")
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
+  const [quantity, setQuantity] = useState("10")
+  const [showQuantityDropdown, setShowQuantityDropdown] = useState(false)
   const [price, setPrice] = useState("10")
   const [offerPrice, setOfferPrice] = useState("10")
   const [selectedGenres, setSelectedGenres] = useState([])
@@ -76,6 +79,9 @@ const AddProduct = () => {
       }
       if(languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)){
         setShowLanguageDropdown(false)
+      }
+      if(quantityDropdownRef.current && !quantityDropdownRef.current.contains(event.target)){
+        setShowQuantityDropdown(false)
       }
     }
 
@@ -164,6 +170,7 @@ const AddProduct = () => {
         genrePaths,
         price,
         offerPrice,
+        quantity,
         popular
       }
 
@@ -187,6 +194,8 @@ const AddProduct = () => {
         setFiles([]);
         setPrice("10");
         setOfferPrice("10");
+        setQuantity("10");
+        setShowQuantityDropdown(false);
         setSelectedGenres([]);
         setSelectedSubgenrePaths([]);
         setGenreQuery("");
@@ -392,6 +401,35 @@ const AddProduct = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+        <div className='w-full max-w-3xl'>
+          <div ref={quantityDropdownRef} className='relative max-w-[14rem]'>
+            <h5 className='h5'>Quantity</h5>
+            <button
+              type='button'
+              onClick={() => setShowQuantityDropdown((value) => !value)}
+              className='mt-2 w-full rounded bg-white px-3 py-2 text-left ring-1 ring-slate-900/10 outline-none'
+            >
+              {quantity}
+            </button>
+            {showQuantityDropdown && (
+              <div className='absolute left-0 right-0 top-[4.6rem] z-20 max-h-64 overflow-y-auto rounded-xl bg-white p-2 shadow-xl ring-1 ring-slate-900/10'>
+                {Array.from({ length: 100 }, (_, index) => index + 1).map((value) => (
+                  <button
+                    key={value}
+                    type='button'
+                    onClick={() => {
+                      setQuantity(String(value))
+                      setShowQuantityDropdown(false)
+                    }}
+                    className={`block w-full rounded-lg px-3 py-2 text-left hover:bg-primary ${quantity === String(value) ? 'bg-secondary text-white hover:bg-secondary' : ''}`}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         {/* IMAGES */}

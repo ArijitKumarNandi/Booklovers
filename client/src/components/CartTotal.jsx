@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { FiCreditCard, FiMapPin } from 'react-icons/fi'
 
 const CartTotal = () => {
-  const {navigate, books, currency, cartItems, setCartItems, method, setMethod, getCartAmount, getCartCount, delivery_charges, user, axios} = useContext(ShopContext)
+  const {navigate, books, currency, cartItems, setCartItems, method, setMethod, getCartAmount, getCartCount, delivery_charges, user, axios, fetchBooks} = useContext(ShopContext)
   const [addresses, setAddresses] = useState([])
   const [showAddress, setShowAddress] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState(null)
@@ -34,13 +34,14 @@ const CartTotal = () => {
       let orderItems = []
       for(const itemId in cartItems){
         const book = books.find((item)=> item._id === itemId)
-        book.quantity = cartItems[itemId]
-        orderItems.push(book)
+        if(book){
+          orderItems.push({...book, cartQuantity: cartItems[itemId]})
+        }
       }
       // Convert orderItems to items array for backend
       let items = orderItems.map((item)=>({
         product: item._id,
-        quantity: item.quantity
+        quantity: item.cartQuantity
       }))
       // Place Order using COD
       if(method === "COD"){
@@ -48,6 +49,7 @@ const CartTotal = () => {
         if(data.success){
           toast.success(data.message)
           setCartItems({})
+          await fetchBooks()
           navigate("/my-orders")
         }else{
           toast.error(data.message)
@@ -55,6 +57,7 @@ const CartTotal = () => {
       }else{
         const {data} = await axios.post("/api/order/stripe", {items, address: selectedAddress._id})
         if(data.success){
+          await fetchBooks()
           window.location.replace(data.url)
          
         }else{

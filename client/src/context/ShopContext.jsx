@@ -21,6 +21,10 @@ const ShopContextProvider = ({children}) => {
     const [showUserLogin, setShowUserLogin] = useState("")
     const delivery_charges = 10 // 10 Dollars
     const [isAdmin, setIsAdmin] = useState(false)
+    const getAvailableQuantity = (book) => {
+      const quantity = Number(book?.quantity)
+      return Number.isFinite(quantity) ? Math.max(0, quantity) : 10
+    }
 
     // Fetch all books
     const fetchBooks = async ()=>{
@@ -86,13 +90,23 @@ const ShopContextProvider = ({children}) => {
 
     // Adding items to cart
     const addToCart = async (itemId)=>{
+      const itemInfo = books.find((book) => book._id === itemId)
+      const availableQuantity = getAvailableQuantity(itemInfo)
+      const nextQuantity = (cartItems[itemId] || 0) + 1
+
+      if(!itemInfo || availableQuantity <= 0){
+        toast.error("This book is currently out of stock")
+        return
+      }
+
+      if(nextQuantity > availableQuantity){
+        toast.error(`Only ${availableQuantity} copies left for ${itemInfo.name}`)
+        return
+      }
+
       const cartData = {...cartItems} // Use shallow copy
 
-      if(cartData[itemId]){
-        cartData[itemId] += 1
-      }else{
-        cartData[itemId] =1
-      }
+      cartData[itemId] = nextQuantity
       setCartItems(cartData)
 
       if(user){
@@ -117,6 +131,14 @@ const ShopContextProvider = ({children}) => {
 
     // Update the Quantity of item
     const updateQuantity = async (itemId, quantity)=>{
+      const itemInfo = books.find((book)=> book._id === itemId)
+      const availableQuantity = getAvailableQuantity(itemInfo)
+
+      if(quantity > availableQuantity){
+        toast.error(`Only ${availableQuantity} copies left for ${itemInfo?.name || "this book"}`)
+        return
+      }
+
       const cartData = {...cartItems}
       if(quantity <= 0){
         delete cartData[itemId] // Remove item entirely if quantity is 0 or less
@@ -179,7 +201,7 @@ const ShopContextProvider = ({children}) => {
         
     },[])
 
-    const value = {books,navigate,user,setUser,currency, searchQuery, setSearchQuery, cartItems, setCartItems, addToCart, getCartAmount, getCartCount, updateQuantity, method, setMethod, delivery_charges, showUserLogin, setShowUserLogin, isAdmin, setIsAdmin, axios, fetchBooks, fetchUser, logoutUser, wishlistItems, setWishlistItems, toggleWishlist }
+    const value = {books,navigate,user,setUser,currency, searchQuery, setSearchQuery, cartItems, setCartItems, addToCart, getCartAmount, getCartCount, updateQuantity, method, setMethod, delivery_charges, showUserLogin, setShowUserLogin, isAdmin, setIsAdmin, axios, fetchBooks, fetchUser, logoutUser, wishlistItems, setWishlistItems, toggleWishlist, getAvailableQuantity }
 
   return (
     <ShopContext.Provider value={value}>

@@ -7,7 +7,7 @@ import { matchesGenreFilter } from '../assets/genreTree'
 
 
 const CategoryShop = () => {
-  const {books, searchQuery} = useContext(ShopContext)
+  const {books, searchQuery, getAvailableQuantity} = useContext(ShopContext)
   const [filteredBooks, setFilteredBooks] = useState([])
   const [currPage, setCurrPage] = useState(1)
   const itemsPerPage = 10
@@ -40,7 +40,8 @@ const CategoryShop = () => {
     setCurrPage(1) // Reset to first page on search/filter change
   }, [books, searchQuery, selectedGenre]);
 
-  const totalPages = Math.ceil(filteredBooks.filter((b) => b.inStock).length / itemsPerPage);
+  const availableBooks = filteredBooks.filter((book) => getAvailableQuantity(book) > 0)
+  const totalPages = Math.ceil(availableBooks.length / itemsPerPage);
   useEffect(()=>{
     window.scrollTo({top: 0, behavior: "smooth"})
   }, [currPage])
@@ -49,8 +50,8 @@ const CategoryShop = () => {
     <div className='max-padd-container py-16 pt-28'>
       <Title title1={selectedGenre} title2={"Books"} titleStyles={"pb-10"} />
       <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 sm:gap-8'>
-        {filteredBooks.length > 0 ? (
-          filteredBooks.filter((book)=>book.inStock).slice((currPage - 1) * itemsPerPage, currPage * itemsPerPage).map((book)=>
+        {availableBooks.length > 0 ? (
+          availableBooks.slice((currPage - 1) * itemsPerPage, currPage * itemsPerPage).map((book)=>
             <Item key={book._id} book={book} />
           )
         ) : (

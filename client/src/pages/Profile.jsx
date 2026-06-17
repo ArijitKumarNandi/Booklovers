@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
-import { FiCamera, FiLock, FiMail, FiSave, FiTrash2, FiUser } from 'react-icons/fi'
+import { FiBell, FiCamera, FiLock, FiMail, FiSave, FiTrash2, FiUser } from 'react-icons/fi'
 import userImg from '../assets/user.png'
 import { ShopContext } from '../context/ShopContext'
 
@@ -14,7 +14,13 @@ const Profile = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [savingProfile, setSavingProfile] = useState(false)
   const [savingPassword, setSavingPassword] = useState(false)
+  const [savingNotifications, setSavingNotifications] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    newArrivals: true,
+    marketingEmails: true,
+  })
 
   const avatarPreview = useMemo(() => avatar || user?.avatar || userImg, [avatar, user?.avatar])
 
@@ -28,6 +34,11 @@ const Profile = () => {
       setName(user.name || '')
       setEmail(user.email || '')
       setAvatar(user.avatar || '')
+      setNotificationSettings({
+        emailNotifications: true,
+        newArrivals: user.notificationSettings?.newArrivals ?? true,
+        marketingEmails: true,
+      })
     }
   }, [navigate, user])
 
@@ -116,6 +127,53 @@ const Profile = () => {
     }
   }
 
+  const handleNewArrivalsToggle = async () => {
+    const nextValue = !notificationSettings.newArrivals
+    setNotificationSettings((current) => ({ ...current, newArrivals: nextValue }))
+    setSavingNotifications(true)
+
+    try {
+      const { data } = await axios.put('/api/user/notification-settings', { newArrivals: nextValue })
+      if (data.success) {
+        setUser(data.user)
+        toast.success(data.message)
+      } else {
+        setNotificationSettings((current) => ({ ...current, newArrivals: !nextValue }))
+        toast.error(data.message)
+      }
+    } catch (error) {
+      setNotificationSettings((current) => ({ ...current, newArrivals: !nextValue }))
+      toast.error(error.message)
+    } finally {
+      setSavingNotifications(false)
+    }
+  }
+
+  const handleLocalNotificationToggle = (settingKey) => {
+    setNotificationSettings((current) => ({ ...current, [settingKey]: !current[settingKey] }))
+    toast.success('Notification settings updated')
+  }
+
+  const NotificationToggle = ({ label, description, checked, onClick }) => (
+    <div className='flex items-center justify-between gap-4 border-t border-[var(--theme-border)] py-3 first:border-t-0 first:pt-0 last:pb-0'>
+      <div>
+        <p className='medium-14 !text-inherit'>{label}</p>
+        <p className='mt-0.5 text-xs'>{description}</p>
+      </div>
+      <button
+        type='button'
+        role='switch'
+        aria-checked={checked}
+        aria-label={label}
+        disabled={savingNotifications}
+        onClick={onClick}
+        className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition hover:shadow-sm ${checked ? 'bg-secondary' : 'bg-slate-300'} disabled:opacity-70`}
+      >
+        <span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition ${checked ? 'left-6' : 'left-1'}`} />
+      </button>
+    </div>
+  )
+
   if (!user) {
     return <div className='max-padd-container min-h-[60vh] pt-32'>Loading profile...</div>
   }
@@ -154,6 +212,37 @@ const Profile = () => {
                   <p className='text-xs'>Email address</p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div className='surface-card mt-5 rounded-2xl p-5 shadow-sm ring-1 ring-slate-900/10'>
+            <div className='flex items-start gap-3'>
+              <span className='flexCenter h-10 w-10 rounded-xl bg-primary text-secondary'><FiBell /></span>
+              <div>
+                <h2 className='bold-16'>Notifications</h2>
+                <p className='mt-1 text-xs'>Manage how you receive updates.</p>
+              </div>
+            </div>
+
+            <div className='mt-4'>
+              <NotificationToggle
+                label='Email Notifications'
+                description='Receive notifications via email'
+                checked={notificationSettings.emailNotifications}
+                onClick={() => handleLocalNotificationToggle('emailNotifications')}
+              />
+              <NotificationToggle
+                label='New Arrivals'
+                description='Notifications about new books'
+                checked={notificationSettings.newArrivals}
+                onClick={handleNewArrivalsToggle}
+              />
+              <NotificationToggle
+                label='Marketing Emails'
+                description='Promotional offers and updates'
+                checked={notificationSettings.marketingEmails}
+                onClick={() => handleLocalNotificationToggle('marketingEmails')}
+              />
             </div>
           </div>
 

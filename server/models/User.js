@@ -5,6 +5,11 @@ const userSchema = new mongoose.Schema({
     email:{type:String, required:true, unique:true},
     password:{type:String, required:true},
     avatar:{type:String, default:""},
+    notificationSettings:{
+        emailNotifications:{type:Boolean, default:true},
+        newArrivals:{type:Boolean, default:true},
+        marketingEmails:{type:Boolean, default:true},
+    },
     cartData:{type:Object, default:{}},
     wishlist:[{type:mongoose.Schema.Types.ObjectId, ref:"product"}],
     resetPasswordToken:{type:String, default:""},

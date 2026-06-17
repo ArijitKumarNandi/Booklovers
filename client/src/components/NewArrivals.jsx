@@ -14,15 +14,15 @@ import { Autoplay } from 'swiper/modules';
 
 const NewArrivals = () => {
 
-const {books} = useContext(ShopContext)
+const {books, getAvailableQuantity} = useContext(ShopContext)
 
 const newArrivals = useMemo(() => {
     return books
-        .filter((book) => book.inStock)
+        .filter((book) => getAvailableQuantity(book) > 0)
         .slice()
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 6)
-}, [books])
+}, [books, getAvailableQuantity])
 
   return (
     <section className='max-padd-container py-16'>

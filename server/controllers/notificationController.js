@@ -50,3 +50,23 @@ export const markNotificationRead = async (req, res) => {
         res.json({success: false, message: error.message})
     }
 }
+
+export const deleteNotification = async (req, res) => {
+    try {
+        const {notificationId} = req.params
+
+        const notification = await Notification.findOneAndDelete({
+            _id: notificationId,
+            userId: req.userId,
+        })
+
+        if(!notification){
+            return res.json({success: false, message: "Notification not found"})
+        }
+
+        res.json({success: true, message: "Notification deleted"})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success: false, message: error.message})
+    }
+}

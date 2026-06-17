@@ -5,6 +5,7 @@ import crypto from "crypto"
 import Notification from "../models/Notification.js"
 import Product from "../models/Product.js"
 import User from "../models/User.js"
+import UserActivity from "../models/UserActivity.js"
 import { sendMail } from "../config/mailer.js"
 
 const cookieOptions = {
@@ -269,13 +270,42 @@ export const updatePassword = async (req,res)=>{
     }
 }
 
+// UPDATE USER NOTIFICATION SETTINGS
+export const updateNotificationSettings = async (req,res)=>{
+    try {
+        const {userId} = req
+        const {newArrivals} = req.body
+
+        if(typeof newArrivals !== "boolean"){
+            return res.json({success:false, message:"New arrivals setting is required"})
+        }
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            {
+                $set:{
+                    "notificationSettings.emailNotifications": true,
+                    "notificationSettings.newArrivals": newArrivals,
+                    "notificationSettings.marketingEmails": true,
+                }
+            },
+            {new:true}
+        ).select("-password")
+
+        return res.json({success:true, message:"Notification settings updated", user})
+    } catch (error) {
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
+
 // GET USER WISHLIST
 export const getWishlist = async (req,res)=>{
     try {
         const {userId} = req
         const user = await User.findById(userId).populate({
             path: "wishlist",
-            match: {inStock: true},
+            match: {$or: [{quantity: {$gt: 0}}, {quantity: {$exists: false}}]},
         })
 
         if(!user){
@@ -320,6 +350,14 @@ export const toggleWishlist = async (req,res)=>{
         }
 
         await user.save()
+
+        if(!isWishlisted){
+            await UserActivity.create({
+                userId,
+                productId: product._id,
+                action: "wishlist",
+            }).catch(() => {})
+        }
 
         return res.json({
             success:true,

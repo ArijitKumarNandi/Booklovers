@@ -5,6 +5,8 @@ import toast from 'react-hot-toast'
 const Orders = () => {
   const {currency, axios} = useContext(ShopContext)
   const [orders, setOrders] = useState([])
+  const normalStatusFlow = ['Order Placed', 'Packing', 'Shipped', 'Out for delivery', 'Delivered']
+  const lockedStatuses = ['Delivered', 'Cancelled', 'Return Approved', 'Return Rejected', 'Cancellation Requested', 'Return Requested']
 
   const fetchAllOrders = useCallback(async ()=>{
     try {
@@ -32,6 +34,31 @@ const Orders = () => {
       toast.error(error.message)
     }
   }
+
+  const requestActionHandler = async (orderId, type, action)=>{
+    try {
+      const endpoint = type === 'cancel' ? '/api/order/cancel-action' : '/api/order/return-action'
+      const {data} = await axios.post(endpoint, {orderId, action})
+      if(data.success){
+        toast.success(data.message)
+        await fetchAllOrders()
+      }else{
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+  const getStatusOptions = (status) => {
+    const currentIndex = normalStatusFlow.indexOf(status)
+    if(currentIndex === -1) return [status]
+
+    return normalStatusFlow.slice(currentIndex)
+  }
+
+  const isStatusLocked = (status) => lockedStatuses.includes(status)
+  const isPaymentDone = (order) => order.isPaid || ['Delivered', 'Return Requested', 'Return Approved', 'Return Rejected'].includes(order.status)
 
   useEffect(()=>{
     fetchAllOrders()
@@ -89,7 +116,7 @@ const Orders = () => {
               <div className='flex gap-4'>
                 <div className='flex items-center gap-x-2'>
                   <h5 className='medium-14'>Payment Status:</h5>
-                  <p>{order.isPaid ? "Done" : "Pending"}</p>
+                  <p>{isPaymentDone(order) ? "Done" : "Pending"}</p>
                   <div className='flex items-center gap-x-2'>
                     <h5 className='medium-14'>Method:</h5>
                     <p className='text-gray-400 text-sm'>{order.paymentMethod}</p>
@@ -110,15 +137,38 @@ const Orders = () => {
             </div>
             <div className='flex items-center gap-2'>
              <h5 className="medium-14">Status:</h5>
-             <select onChange={(event)=>statusHandler(event, order._id)} value={order.status} className='text-xs font-semibold p-1 ring-1 ring-slate-900/5 rounded max-w-36 bg-primary'>
-              <option value="Order Placed">Order Placed</option>
-              <option value="Packing">Packing</option>
-              <option value="Shipped">Shipped</option>
-              <option value="Out for delivery">out for delivery</option>
-              <option value="Delivered">Delivered</option>
+             <select
+              onChange={(event)=>statusHandler(event, order._id)}
+              value={order.status}
+              disabled={isStatusLocked(order.status)}
+              className='text-xs font-semibold p-1 ring-1 ring-slate-900/5 rounded max-w-40 bg-primary disabled:cursor-not-allowed disabled:opacity-70'
+             >
+              {getStatusOptions(order.status).map((status) => (
+                <option key={status} value={status}>{status}</option>
+              ))}
              </select>
             </div>
           </div>
+          {order.cancelRequest?.requested && (
+            <div className='mt-3 rounded-xl bg-red-50 p-4 ring-1 ring-red-100'>
+              <h4 className='bold-15 text-red-700'>Cancellation Requested</h4>
+              <p className='mt-1 text-red-700'>{order.cancelRequest.reason}</p>
+              <div className='mt-3 flex flex-wrap gap-2'>
+                <button onClick={() => requestActionHandler(order._id, 'cancel', 'approve')} className='rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700'>Approve Cancellation</button>
+                <button onClick={() => requestActionHandler(order._id, 'cancel', 'reject')} className='rounded-md bg-white px-4 py-2 text-sm font-semibold text-red-600 ring-1 ring-red-200 transition hover:bg-red-100'>Reject</button>
+              </div>
+            </div>
+          )}
+          {order.returnRequest?.status === 'Pending' && (
+            <div className='mt-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-100'>
+              <h4 className='bold-15 text-amber-700'>Return Requested</h4>
+              <p className='mt-1 text-amber-700'>{order.returnRequest.reason}</p>
+              <div className='mt-3 flex flex-wrap gap-2'>
+                <button onClick={() => requestActionHandler(order._id, 'return', 'approve')} className='rounded-md bg-amber-400 px-4 py-2 text-sm font-semibold text-gray-900 transition hover:bg-amber-300'>Approve Return</button>
+                <button onClick={() => requestActionHandler(order._id, 'return', 'reject')} className='rounded-md bg-white px-4 py-2 text-sm font-semibold text-amber-700 ring-1 ring-amber-200 transition hover:bg-amber-100'>Reject</button>
+              </div>
+            </div>
+          )}
         </div>
       ))}
     </div>

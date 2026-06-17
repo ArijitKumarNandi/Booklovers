@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from 're
 import toast from 'react-hot-toast'
 import { FaBell, FaHeart, FaShoppingBag, FaStar } from 'react-icons/fa'
 import { FaTruckFast } from 'react-icons/fa6'
+import { FiTrash2 } from 'react-icons/fi'
 import { MdRateReview } from 'react-icons/md'
 import { ShopContext } from '../context/ShopContext'
 
@@ -69,6 +70,20 @@ const Notifications = () => {
     }
   }
 
+  const deleteNotification = async (notificationId) => {
+    try {
+      const { data } = await axios.delete(`/api/notification/${notificationId}`)
+      if(data.success){
+        setNotifications((items) => items.filter((notification) => notification._id !== notificationId))
+        toast.success(data.message)
+      }else{
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
   const unreadCount = notifications.filter((notification) => !notification.isRead).length
 
   return (
@@ -124,15 +139,19 @@ const Notifications = () => {
       ) : (
         <div className='grid gap-3'>
           {notifications.map((notification) => (
-            <button
+            <article
               key={notification._id}
-              onClick={() => openNotification(notification)}
               className={`surface-card grid w-full gap-4 rounded-xl p-4 text-left shadow-sm ring-1 ring-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center ${notification.isRead ? 'opacity-80' : 'ring-secondary/20'}`}
             >
-              <span className={`flexCenter h-12 w-12 rounded-full text-xl ring-1 ${notificationTone[notification.type] ?? 'bg-primary text-secondary ring-secondary/20'}`}>
+              <button
+                type='button'
+                onClick={() => openNotification(notification)}
+                className={`flexCenter h-12 w-12 rounded-full text-xl ring-1 ${notificationTone[notification.type] ?? 'bg-primary text-secondary ring-secondary/20'}`}
+                aria-label={`Open ${notification.title}`}
+              >
                 {notificationIcon[notification.type] ?? <FaStar />}
-              </span>
-              <div className='min-w-0'>
+              </button>
+              <button type='button' onClick={() => openNotification(notification)} className='min-w-0 text-left'>
                 <div className='flex flex-wrap items-center gap-2'>
                   <h3 className='bold-16'>{notification.title}</h3>
                   {!notification.isRead && (
@@ -140,9 +159,20 @@ const Notifications = () => {
                   )}
                 </div>
                 <p className='mt-1 text-[15px]'>{notification.message}</p>
+              </button>
+              <div className='flex flex-col items-start gap-2 md:items-end'>
+                <p className='text-right'>{dateFormatter.format(new Date(notification.createdAt))}</p>
+                <button
+                  type='button'
+                  onClick={() => deleteNotification(notification._id)}
+                  className='flexCenter h-8 w-8 rounded-full bg-red-50 text-red-600 ring-1 ring-red-100 transition hover:bg-red-600 hover:text-white'
+                  aria-label={`Delete ${notification.title}`}
+                  title='Delete notification'
+                >
+                  <FiTrash2 />
+                </button>
               </div>
-              <p className='text-right'>{dateFormatter.format(new Date(notification.createdAt))}</p>
-            </button>
+            </article>
           ))}
         </div>
       )}

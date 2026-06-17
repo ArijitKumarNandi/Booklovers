@@ -23,7 +23,7 @@ const getGenreGroups = (book) => {
 }
 
 const ProductDetails = () => {
-  const {books, currency, addToCart, wishlistItems, toggleWishlist} = useContext(ShopContext)
+  const {books, currency, addToCart, wishlistItems, toggleWishlist, getAvailableQuantity, user, axios} = useContext(ShopContext)
   const {id} = useParams()
   const book = books.find((b)=> b._id === id)
   const [selectedImage, setSelectedImage] = useState(null)
@@ -32,6 +32,7 @@ const ProductDetails = () => {
   const genreLabels = getBookGenreLabels(book)
   const genreGroups = getGenreGroups(book)
   const hasBookMeta = Boolean(book?.author || book?.publisher || book?.language)
+  const availableQuantity = getAvailableQuantity(book)
 
   const copyPageUrl = async () => {
     const pageUrl = window.location.href
@@ -59,8 +60,14 @@ const ProductDetails = () => {
     }
   }, [book, id])
 
+  useEffect(() => {
+    if(!book || !user) return
+
+    axios.post('/api/product/activity', {productId: book._id, action: 'view'}).catch(() => {})
+  }, [axios, book, user])
+
   return (
-    book && (
+    book && availableQuantity > 0 ? (
       <div className='max-padd-container py-16 pt-28'>
         <p>
           <Link to={`/`}>Home</Link> /
@@ -172,6 +179,14 @@ const ProductDetails = () => {
         <ProductDescription description={book.description} productId={book._id} />
         <ProductFeatures />
         <RelatedBooks book={book} id={id}/>
+      </div>
+    ) : (
+      <div className='max-padd-container py-16 pt-28'>
+        <div className='rounded-xl bg-primary p-8 text-center shadow-sm ring-1 ring-slate-900/5'>
+          <h1 className='bold-28'>Book unavailable</h1>
+          <p className='mt-2'>This book is currently out of stock.</p>
+          <Link to='/shop' className='btn-secondary mt-5 inline-flex !rounded-md'>Back to Shop</Link>
+        </div>
       </div>
     )
   )

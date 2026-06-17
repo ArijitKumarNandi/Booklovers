@@ -34,7 +34,7 @@ const Cart = () => {
                 <div key={book._id} className='grid grid-cols-[6fr_1fr_2fr] items-center bg-primary p-3 rounded-xl shadow-sm ring-1 ring-slate-900/5'>
                   <div className='flex items-center md:gap-6 gap-3'>
                     <div className='flex rounded-xl bg-white p-1 shadow-sm'>
-                      <img src={book.image} alt="bookImage" className='h-16 w-12 rounded-lg object-contain' />
+                      <img src={book.image?.[0]} alt="bookImage" className='h-16 w-12 rounded-lg object-contain' />
                     </div>
                     <div>
                       <h5 className='h5 hidden sm:block line-clamp-1'>{book.name}</h5>
