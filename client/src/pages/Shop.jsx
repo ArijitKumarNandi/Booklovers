@@ -38,11 +38,11 @@ const Shop = () => {
   }, [currPage])
 
   return (
-    <div className='max-padd-container py-16 pt-28'>
+    <div className='max-padd-container py-16 pt-24'>
       <div className='mb-8 rounded-xl bg-primary p-4 shadow-sm ring-1 ring-slate-900/5'>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'>
           <div>
-            <h2 className='bold-18'>Filter Books By Genre</h2>
+            <h2 className='bold-24'>Filter Books By Genre</h2>
             <p className='mt-1'>Choose a genre to quickly find books that match your reading mood.</p>
           </div>
           <div className='flex flex-col gap-2 sm:min-w-80'>

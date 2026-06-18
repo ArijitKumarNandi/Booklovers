@@ -1,14 +1,16 @@
 import Notification from "../models/Notification.js"
+import User from "../models/User.js"
 
-export const createNotification = async ({userId, type, title, message, targetPath, orderId, reviewId}) => {
+export const createNotification = async ({userId, type, title, message, targetPath, orderId, reviewId, productId}) => {
     if(!userId || !type || !title || !message || !targetPath) return null
 
-    if(orderId || reviewId){
+    if(orderId || reviewId || productId){
         const existingNotification = await Notification.findOne({
             userId,
             type,
             ...(orderId ? {orderId} : {}),
             ...(reviewId ? {reviewId} : {}),
+            ...(productId ? {productId} : {}),
         })
 
         if(existingNotification) return existingNotification
@@ -22,7 +24,23 @@ export const createNotification = async ({userId, type, title, message, targetPa
         targetPath,
         orderId,
         reviewId,
+        productId,
     })
+}
+
+export const notifyWishlistLowStock = async (product, quantity) => {
+    if(!product?._id || quantity <= 0 || quantity > 5) return []
+
+    const users = await User.find({wishlist: product._id}).select("_id")
+
+    return Promise.all(users.map((user) => createNotification({
+        userId: user._id,
+        type: "wishlist_low_stock",
+        title: "Wishlisted book low stock",
+        message: `${product.name} from your wishlist has only ${quantity} cop${quantity === 1 ? "y" : "ies"} left.`,
+        targetPath: `/shop/book/${product._id}`,
+        productId: product._id,
+    })))
 }
 
 export const listNotifications = async (req, res) => {

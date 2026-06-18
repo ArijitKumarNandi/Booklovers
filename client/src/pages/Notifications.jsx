@@ -10,6 +10,7 @@ const notificationIcon = {
   order_placed: <FaShoppingBag />,
   order_status: <FaTruckFast />,
   product_added: <FaShoppingBag />,
+  wishlist_low_stock: <FaHeart />,
   review_reply: <MdRateReview />,
   review_liked: <FaHeart />,
 }
@@ -18,6 +19,7 @@ const notificationTone = {
   order_placed: 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/20',
   order_status: 'bg-sky-500/10 text-sky-600 ring-sky-500/20',
   product_added: 'bg-amber-500/10 text-amber-600 ring-amber-500/20',
+  wishlist_low_stock: 'bg-red-500/10 text-red-500 ring-red-500/20',
   review_reply: 'bg-secondary/10 text-secondary ring-secondary/20',
   review_liked: 'bg-red-500/10 text-red-500 ring-red-500/20',
 }

@@ -30,6 +30,17 @@ const languageOptions = [
 
 const quantityOptions = Array.from({ length: 101 }, (_, index) => index)
 const LOW_STOCK_LIMIT = 5
+const ITEMS_PER_PAGE = 10
+
+const stockFilters = [
+  { label: 'All books', value: 'all' },
+  { label: 'Available only', value: 'available' },
+  { label: 'Low stock', value: 'low' },
+  { label: 'Out of stock', value: 'out' },
+  { label: 'Newest first', value: 'newest' },
+  { label: 'Lowest to Highest Price', value: 'price-low-high' },
+  { label: 'Highest to Lowest Price', value: 'price-high-low' },
+]
 
 const getValidGenreNames = () => genreTree.map((genre) => genre.name)
 
@@ -88,6 +99,9 @@ const ProductList = () => {
   const [showEditGenreDropdown, setShowEditGenreDropdown] = useState(false)
   const [editSubgenreQuery, setEditSubgenreQuery] = useState('')
   const [showEditSubgenreDropdown, setShowEditSubgenreDropdown] = useState(false)
+  const [currPage, setCurrPage] = useState(1)
+  const [stockFilter, setStockFilter] = useState('all')
+  const [productSearchQuery, setProductSearchQuery] = useState('')
 
   const selectedEditGenreNodes = useMemo(() => (
     genreTree.filter((genre) => editForm?.genres?.includes(genre.name))
@@ -113,6 +127,65 @@ const ProductList = () => {
       !query || subgenre.name.toLowerCase().includes(query) || subgenre.genre.toLowerCase().includes(query)
     ))
   }, [editSubgenreOptions, editSubgenreQuery])
+
+  const filteredBooks = books.filter((book) => {
+    const quantity = Number(book.quantity ?? 10)
+    const query = productSearchQuery.trim().toLowerCase()
+    const searchableText = [
+      book.name,
+      book.category,
+      ...(book.genres ?? []),
+      ...(book.subgenres ?? []),
+      ...(book.genrePaths ?? []),
+      ...getBookGenreLabels(book),
+    ].filter(Boolean).join(' ').toLowerCase()
+
+    if(query && !searchableText.includes(query)){
+      return false
+    }
+
+    if(stockFilter === 'low'){
+      return quantity > 0 && quantity <= LOW_STOCK_LIMIT
+    }
+
+    if(stockFilter === 'out'){
+      return quantity <= 0
+    }
+
+    if(stockFilter === 'available'){
+      return quantity > 0
+    }
+
+    return true
+  }).sort((firstBook, secondBook) => {
+    if(stockFilter === 'newest'){
+      return new Date(secondBook.createdAt ?? 0) - new Date(firstBook.createdAt ?? 0)
+    }
+
+    if(stockFilter === 'price-low-high'){
+      return Number(firstBook.offerPrice ?? firstBook.price ?? 0) - Number(secondBook.offerPrice ?? secondBook.price ?? 0)
+    }
+
+    if(stockFilter === 'price-high-low'){
+      return Number(secondBook.offerPrice ?? secondBook.price ?? 0) - Number(firstBook.offerPrice ?? firstBook.price ?? 0)
+    }
+
+    return 0
+  })
+  const totalPages = Math.ceil(filteredBooks.length / ITEMS_PER_PAGE)
+  const paginatedBooks = filteredBooks.slice((currPage - 1) * ITEMS_PER_PAGE, currPage * ITEMS_PER_PAGE)
+  const showingStart = filteredBooks.length === 0 ? 0 : (currPage - 1) * ITEMS_PER_PAGE + 1
+  const showingEnd = Math.min(currPage * ITEMS_PER_PAGE, filteredBooks.length)
+
+  useEffect(() => {
+    if(totalPages > 0 && currPage > totalPages){
+      setCurrPage(totalPages)
+    }
+  }, [currPage, totalPages])
+
+  useEffect(() => {
+    setCurrPage(1)
+  }, [productSearchQuery, stockFilter])
 
   useEffect(() => {
     const handlePointerDown = (event) => {
@@ -281,6 +354,30 @@ const ProductList = () => {
   return (
     <div className='px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary overflow-y-scroll lg:w-4/5 rounded-xl'>
       <div className='flex flex-col gap-2'>
+        <div className='-mt-8 mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+          <div className='flex w-full max-w-md items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-sm ring-1 ring-slate-900/10'>
+            <FiSearch className='shrink-0 text-gray-400' />
+            <input
+              value={productSearchQuery}
+              onChange={(event) => setProductSearchQuery(event.target.value)}
+              type='text'
+              placeholder='Search by title or genre...'
+              className='w-full bg-transparent text-sm font-semibold outline-none placeholder:font-normal placeholder:text-gray-400'
+            />
+          </div>
+          <label className='flex items-center rounded-lg bg-white px-3 py-2 shadow-sm ring-1 ring-slate-900/10'>
+            <select
+              value={stockFilter}
+              onChange={(event) => setStockFilter(event.target.value)}
+              className='bg-transparent pr-8 text-sm font-semibold outline-none'
+            >
+              {stockFilters.map((filter) => (
+                <option key={filter.value} value={filter.value}>{filter.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
         <div className='grid grid-cols-[0.7fr_2.4fr_1.5fr_1fr_0.8fr_1.5fr] items-center py-2 px-3 bg-white bold-14 sm:bold-15 mb-1 rounded'>
           <h5>Image</h5>
           <h5>Name</h5>
@@ -290,7 +387,7 @@ const ProductList = () => {
           <h5 className='text-center'>Actions</h5>
         </div>
 
-        {books.map((book) => {
+        {paginatedBooks.map((book) => {
           const stockBadge = getStockBadge(book)
 
           return (
@@ -327,6 +424,23 @@ const ProductList = () => {
           )
         })}
       </div>
+
+      <div className='mt-5 flex flex-col gap-1 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between'>
+        <p>Showing {showingStart}-{showingEnd} of {filteredBooks.length} books</p>
+        {totalPages > 1 && (
+          <p className='font-semibold text-secondary'>Page {currPage} of {totalPages}</p>
+        )}
+      </div>
+
+      {totalPages > 1 && (
+        <div className='flexCenter flex-wrap gap-2 sm:gap-4 mt-8 mb-2'>
+          <button disabled={currPage === 1} onClick={() => setCurrPage((prev) => prev - 1)} className={`${currPage === 1 && 'opacity-50 cursor-not-allowed'} btn-dark !py-1 !px-3`}>Previous</button>
+          {Array.from({length: totalPages}, (_, index) => (
+            <button key={index + 1} onClick={() => setCurrPage(index + 1)} className={`${currPage === index + 1 && 'bg-secondary !text-white'} btn-light !py-1 !px-3`}>{index + 1}</button>
+          ))}
+          <button disabled={currPage === totalPages} onClick={() => setCurrPage((prev) => prev + 1)} className={`${currPage === totalPages && 'opacity-50 cursor-not-allowed'} btn-white bg-tertiary !py-1 !px-3`}>Next</button>
+        </div>
+      )}
 
       {editingBook && editForm && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4'>

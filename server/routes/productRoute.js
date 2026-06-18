@@ -12,7 +12,7 @@ productRouter.get('/list', listProduct)
 productRouter.get('/recommendations', recommendProducts)
 productRouter.post('/activity', authUser, recordProductActivity)
 productRouter.post('/single', singleProduct)
-productRouter.post('/stock', changeStock)
+productRouter.post('/stock', authAdmin, changeStock)
 productRouter.put('/:productId', authAdmin, upload.array(["images"]), updateProduct)
 productRouter.delete('/:productId', authAdmin, deleteProduct)
 

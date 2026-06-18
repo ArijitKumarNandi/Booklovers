@@ -1,7 +1,7 @@
 import Order from "../models/Order.js"
 import Product from "../models/Product.js"
 import User from "../models/User.js"
-import { createNotification } from "./notificationController.js"
+import { createNotification, notifyWishlistLowStock } from "./notificationController.js"
 import stripe from "stripe"
 
 
@@ -24,6 +24,8 @@ const getAvailableQuantity = (product) => {
     const quantity = Number(product?.quantity)
     return Number.isFinite(quantity) ? Math.max(0, quantity) : 10
 }
+
+const isLowStockQuantity = (quantity) => quantity > 0 && quantity <= 5
 
 const validateOrderItems = async (items = []) => {
     let subtotal = 0
@@ -61,6 +63,10 @@ const decrementOrderStock = async (items = []) => {
         product.quantity = Math.max(0, availableQuantity - item.quantity)
         product.inStock = product.quantity > 0
         await product.save()
+
+        if(!isLowStockQuantity(availableQuantity) && isLowStockQuantity(product.quantity)){
+            await notifyWishlistLowStock(product, product.quantity)
+        }
     }
 }
 
@@ -344,7 +350,10 @@ export const userOrders = async (req,res)=>{
 // ALL ORDERS DATA FOR ADMIN PANEL
 export const allOrders = async (req,res)=>{
     try {
-        const orders = await Order.find({$or: [{paymentMethod: "COD"}, {isPaid:true}]}).populate("items.product address").sort({createdAt: -1})
+        const orders = await Order.find({$or: [{paymentMethod: "COD"}, {isPaid:true}]})
+            .populate("items.product address")
+            .populate("userId", "name email")
+            .sort({createdAt: -1})
         res.json({success:true, orders})
     } catch (error) {
         console.log(error.message)

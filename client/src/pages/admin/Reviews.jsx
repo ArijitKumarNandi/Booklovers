@@ -3,13 +3,15 @@ import toast from 'react-hot-toast'
 import { FaHeart, FaRegCommentDots, FaRegHeart, FaStar, FaTrash } from 'react-icons/fa'
 import { MdRateReview } from 'react-icons/md'
 import { ShopContext } from '../../context/ShopContext'
-import { getBookGenreLabels } from '../../assets/genreTree'
+import { getBookGenreLabels, getRootGenres } from '../../assets/genreTree'
 
 const Reviews = () => {
   const { axios } = useContext(ShopContext)
   const [reviews, setReviews] = useState([])
   const [replyDrafts, setReplyDrafts] = useState({})
   const [loading, setLoading] = useState(true)
+  const [heartFilter, setHeartFilter] = useState('all')
+  const [replyFilter, setReplyFilter] = useState('all')
 
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat('en-IN', {
     day: '2-digit',
@@ -103,6 +105,25 @@ const Reviews = () => {
     : '0.0'
   const repliedCount = reviews.filter((review) => review.adminReply?.message).length
   const heartedCount = reviews.filter((review) => review.adminLiked).length
+  const filteredReviews = reviews.filter((review) => {
+    if(heartFilter === 'hearted' && !review.adminLiked){
+      return false
+    }
+
+    if(heartFilter === 'not-hearted' && review.adminLiked){
+      return false
+    }
+
+    if(replyFilter === 'replied' && !review.adminReply?.message){
+      return false
+    }
+
+    if(replyFilter === 'not-replied' && review.adminReply?.message){
+      return false
+    }
+
+    return true
+  })
 
   return (
     <div className='m-2 h-[97vh] w-full overflow-y-scroll rounded-xl bg-primary px-3 py-8 sm:px-6 lg:w-4/5'>
@@ -150,7 +171,35 @@ const Reviews = () => {
         </div>
       ) : (
         <div className='grid gap-5'>
-          {reviews.map((review) => (
+          <div className='surface-card flex flex-col gap-3 rounded-xl p-4 shadow-sm ring-1 ring-slate-900/5 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='flex flex-col gap-2 sm:flex-row'>
+              <select
+                value={heartFilter}
+                onChange={(event) => setHeartFilter(event.target.value)}
+                className='rounded-lg bg-primary px-3 py-2 text-sm font-semibold outline-none ring-1 ring-slate-900/10'
+              >
+                <option value='all'>All heart status</option>
+                <option value='hearted'>Hearted reviews</option>
+                <option value='not-hearted'>Not hearted reviews</option>
+              </select>
+              <select
+                value={replyFilter}
+                onChange={(event) => setReplyFilter(event.target.value)}
+                className='rounded-lg bg-primary px-3 py-2 text-sm font-semibold outline-none ring-1 ring-slate-900/10'
+              >
+                <option value='all'>All reply status</option>
+                <option value='replied'>Replied reviews</option>
+                <option value='not-replied'>Not replied reviews</option>
+              </select>
+            </div>
+            <p className='text-sm text-gray-500'>Showing {filteredReviews.length} of {reviews.length} reviews</p>
+          </div>
+
+          {filteredReviews.length === 0 ? (
+            <div className='surface-card rounded-xl p-8 text-center shadow-sm ring-1 ring-slate-900/5'>
+              No reviews matched your filters.
+            </div>
+          ) : filteredReviews.map((review) => (
             <article key={review._id} className='surface-card overflow-hidden rounded-2xl shadow-sm ring-1 ring-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-md'>
               <div className='grid gap-5 p-4 xl:grid-cols-[300px_minmax(0,1fr)] lg:p-5'>
                 <div className='rounded-2xl bg-primary p-4 ring-1 ring-slate-900/5'>
@@ -163,7 +212,7 @@ const Reviews = () => {
                     <div className='min-w-0'>
                       <p className='medium-14 text-secondary'>Reviewed Book</p>
                       <h3 className='bold-18 mt-1 line-clamp-3'>{review.productId?.name ?? 'Deleted book'}</h3>
-                      <span className='mt-3 inline-flex rounded-full bg-white px-3 py-1 medium-14 shadow-sm ring-1 ring-slate-900/5'>{getBookGenreLabels(review.productId).join(', ') || 'No genre'}</span>
+                      <span className='mt-3 inline-flex rounded-full bg-white px-3 py-1 medium-14 shadow-sm ring-1 ring-slate-900/5'>{getRootGenres(getBookGenreLabels(review.productId)).join(', ') || 'No genre'}</span>
                     </div>
                   </div>
                   <div className='mt-5 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5'>

@@ -1,10 +1,31 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { ShopContext } from '../../context/ShopContext'
 import toast from 'react-hot-toast'
+import { FiSearch } from 'react-icons/fi'
+
+const orderStatusOptions = [
+  'Order Placed',
+  'Packing',
+  'Shipped',
+  'Out for delivery',
+  'Delivered',
+  'Cancellation Requested',
+  'Cancelled',
+  'Return Requested',
+  'Return Approved',
+  'Return Rejected',
+]
 
 const Orders = () => {
   const {currency, axios} = useContext(ShopContext)
   const [orders, setOrders] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [paymentFilter, setPaymentFilter] = useState('all')
+  const [methodFilter, setMethodFilter] = useState('all')
+  const [requestFilter, setRequestFilter] = useState('all')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const normalStatusFlow = ['Order Placed', 'Packing', 'Shipped', 'Out for delivery', 'Delivered']
   const lockedStatuses = ['Delivered', 'Cancelled', 'Return Approved', 'Return Rejected', 'Cancellation Requested', 'Return Requested']
 
@@ -60,13 +81,142 @@ const Orders = () => {
   const isStatusLocked = (status) => lockedStatuses.includes(status)
   const isPaymentDone = (order) => order.isPaid || ['Delivered', 'Return Requested', 'Return Approved', 'Return Rejected'].includes(order.status)
 
+  const filteredOrders = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+    const queryTokens = query.split(/\s+/).filter(Boolean)
+    const fromDate = dateFrom ? new Date(`${dateFrom}T00:00:00`) : null
+    const toDate = dateTo ? new Date(`${dateTo}T23:59:59`) : null
+
+    return orders.filter((order) => {
+      const orderDate = new Date(order.createdAt)
+      const customerName = `${order.address?.firstName ?? ''} ${order.address?.lastName ?? ''}`.trim()
+      const registeredUser = typeof order.userId === 'object' && order.userId !== null ? order.userId : null
+      const bookText = order.items?.map((item) => [
+        item.product?.name,
+        item.product?.author,
+        item.product?.category,
+        ...(item.product?.genres ?? []),
+        ...(item.product?.subgenres ?? []),
+        ...(item.product?.genrePaths ?? []),
+      ].filter(Boolean).join(' ')).join(' ') ?? ''
+      const searchText = [
+        customerName,
+        registeredUser?.name,
+        registeredUser?.email,
+        order.address?.phone,
+        order.address?.email,
+        order._id,
+        bookText,
+      ].filter(Boolean).join(' ').toLowerCase()
+
+      if(queryTokens.length > 0 && !queryTokens.every((token) => searchText.includes(token))){
+        return false
+      }
+
+      if(statusFilter !== 'all' && order.status !== statusFilter){
+        return false
+      }
+
+      if(paymentFilter === 'done' && !isPaymentDone(order)){
+        return false
+      }
+
+      if(paymentFilter === 'pending' && isPaymentDone(order)){
+        return false
+      }
+
+      if(methodFilter !== 'all' && order.paymentMethod?.toLowerCase() !== methodFilter){
+        return false
+      }
+
+      if(requestFilter === 'cancellation' && !order.cancelRequest?.requested && order.status !== 'Cancellation Requested'){
+        return false
+      }
+
+      if(requestFilter === 'return' && order.returnRequest?.status !== 'Pending' && order.status !== 'Return Requested'){
+        return false
+      }
+
+      if(requestFilter === 'none' && (order.cancelRequest?.requested || order.returnRequest?.status === 'Pending' || ['Cancellation Requested', 'Return Requested'].includes(order.status))){
+        return false
+      }
+
+      if(fromDate && orderDate < fromDate){
+        return false
+      }
+
+      if(toDate && orderDate > toDate){
+        return false
+      }
+
+      return true
+    })
+  }, [dateFrom, dateTo, orders, paymentFilter, methodFilter, requestFilter, searchQuery, statusFilter])
+
+  const resetFilters = () => {
+    setSearchQuery('')
+    setStatusFilter('all')
+    setPaymentFilter('all')
+    setMethodFilter('all')
+    setRequestFilter('all')
+    setDateFrom('')
+    setDateTo('')
+  }
+
   useEffect(()=>{
     fetchAllOrders()
   }, [fetchAllOrders])
 
   return (
     <div className='px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary overflow-y-scroll lg:w-4/5 rounded-xl'>
-      {orders.map((order)=> (
+      <div className='mb-5 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5'>
+        <div className='grid gap-3 xl:grid-cols-[minmax(240px,1.5fr)_repeat(5,minmax(130px,1fr))_auto]'>
+          <div className='flex items-center gap-2 rounded-lg bg-primary px-3 py-2 ring-1 ring-slate-900/10'>
+            <FiSearch className='shrink-0 text-gray-500' />
+            <input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              type='text'
+              placeholder='Search customer or book...'
+              className='w-full bg-transparent text-sm font-semibold outline-none placeholder:font-normal placeholder:text-gray-500'
+            />
+          </div>
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className='rounded-lg bg-primary px-3 py-2 text-sm font-semibold outline-none ring-1 ring-slate-900/10'>
+            <option value='all'>All statuses</option>
+            {orderStatusOptions.map((status) => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+          <select value={paymentFilter} onChange={(event) => setPaymentFilter(event.target.value)} className='rounded-lg bg-primary px-3 py-2 text-sm font-semibold outline-none ring-1 ring-slate-900/10'>
+            <option value='all'>All payments</option>
+            <option value='done'>Payment done</option>
+            <option value='pending'>Payment pending</option>
+          </select>
+          <select value={methodFilter} onChange={(event) => setMethodFilter(event.target.value)} className='rounded-lg bg-primary px-3 py-2 text-sm font-semibold outline-none ring-1 ring-slate-900/10'>
+            <option value='all'>All methods</option>
+            <option value='cod'>COD</option>
+            <option value='stripe'>Stripe</option>
+          </select>
+          <select value={requestFilter} onChange={(event) => setRequestFilter(event.target.value)} className='rounded-lg bg-primary px-3 py-2 text-sm font-semibold outline-none ring-1 ring-slate-900/10'>
+            <option value='all'>All requests</option>
+            <option value='cancellation'>Cancellation requests</option>
+            <option value='return'>Return requests</option>
+            <option value='none'>No active request</option>
+          </select>
+          <div className='grid grid-cols-2 gap-2'>
+            <input value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} type='date' className='min-w-0 rounded-lg bg-primary px-3 py-2 text-sm font-semibold outline-none ring-1 ring-slate-900/10' aria-label='Filter orders from date' />
+            <input value={dateTo} onChange={(event) => setDateTo(event.target.value)} type='date' className='min-w-0 rounded-lg bg-primary px-3 py-2 text-sm font-semibold outline-none ring-1 ring-slate-900/10' aria-label='Filter orders to date' />
+          </div>
+          <button type='button' onClick={resetFilters} className='rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90'>
+            Reset
+          </button>
+        </div>
+        <p className='mt-3 text-sm text-gray-500'>Showing {filteredOrders.length} of {orders.length} orders</p>
+      </div>
+
+      {filteredOrders.length === 0 ? (
+        <div className='rounded-xl bg-white p-6 text-center font-semibold shadow-sm ring-1 ring-slate-900/5'>No orders matched your filters.</div>
+      ) : filteredOrders.map((order)=> (
         <div key={order._id} className='bg-white p-2 mt-3 rounded-lg'>
           {/* BOOK LIST */}
           <div className='flex flex-col lg:flex-row gap-4 mb-3'>

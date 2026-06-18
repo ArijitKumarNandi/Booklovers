@@ -6,6 +6,7 @@ import Order from "../models/Order.js"
 import Product from "../models/Product.js"
 import User from "../models/User.js"
 import UserActivity from "../models/UserActivity.js"
+import { notifyWishlistLowStock } from "./notificationController.js"
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
@@ -16,6 +17,8 @@ const getProductQuantity = (product) => {
     const quantity = Number(product?.quantity)
     return Number.isFinite(quantity) ? Math.max(0, quantity) : 10
 }
+
+const isLowStockQuantity = (quantity) => quantity > 0 && quantity <= 5
 
 const getRequestUserId = (req) => {
     const {token} = req.cookies ?? {}
@@ -506,8 +509,13 @@ export const changeStock = async (req,res)=>{
 export const updateProduct = async (req,res)=>{
     try {
         const {productId} = req.params
+        const existingProduct = await Product.findById(productId)
         const productData = normalizeProductTaxonomy(JSON.parse(req.body.productData))
         const images = req.files || []
+
+        if(!existingProduct){
+            return res.json({success:false, message:"Product not found"})
+        }
 
         const updateData = {
             ...productData,
@@ -524,9 +532,11 @@ export const updateProduct = async (req,res)=>{
         }
 
         const product = await Product.findByIdAndUpdate(productId, updateData, {new:true})
+        const previousQuantity = getProductQuantity(existingProduct)
+        const nextQuantity = getProductQuantity(product)
 
-        if(!product){
-            return res.json({success:false, message:"Product not found"})
+        if(!isLowStockQuantity(previousQuantity) && isLowStockQuantity(nextQuantity)){
+            await notifyWishlistLowStock(product, nextQuantity)
         }
 
         res.json({success:true, message:"Product updated", product})

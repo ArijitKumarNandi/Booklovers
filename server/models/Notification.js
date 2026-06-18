@@ -11,6 +11,7 @@ const notificationSchema = new mongoose.Schema({
             "review_reply",
             "review_liked",
             "product_added",
+            "wishlist_low_stock",
             "cancellation_requested",
             "cancellation_approved",
             "cancellation_rejected",
@@ -24,6 +25,7 @@ const notificationSchema = new mongoose.Schema({
     targetPath: {type: String, required: true},
     orderId: {type: mongoose.Schema.Types.ObjectId, ref: "order"},
     reviewId: {type: mongoose.Schema.Types.ObjectId, ref: "review"},
+    productId: {type: mongoose.Schema.Types.ObjectId, ref: "product"},
     isRead: {type: Boolean, default: false},
 }, {timestamps: true})
 
