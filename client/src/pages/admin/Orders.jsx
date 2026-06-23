@@ -16,6 +16,17 @@ const orderStatusOptions = [
   'Return Rejected',
 ]
 
+const fallbackAddress = {
+  firstName: 'Unknown',
+  lastName: '',
+  phone: 'N/A',
+  street: 'Address unavailable',
+  city: '',
+  state: '',
+  country: '',
+  zipcode: '',
+}
+
 const Orders = () => {
   const {currency, axios} = useContext(ShopContext)
   const [orders, setOrders] = useState([])
@@ -33,7 +44,7 @@ const Orders = () => {
     try {
       const { data } = await axios.post("/api/order/list")
       if (data.success) {
-        setOrders(data.orders)
+        setOrders(Array.isArray(data.orders) ? data.orders : [])
       }else{
         toast.error(data.message)
       }
@@ -89,9 +100,10 @@ const Orders = () => {
 
     return orders.filter((order) => {
       const orderDate = new Date(order.createdAt)
-      const customerName = `${order.address?.firstName ?? ''} ${order.address?.lastName ?? ''}`.trim()
+      const address = order.address ?? fallbackAddress
+      const customerName = `${address.firstName ?? ''} ${address.lastName ?? ''}`.trim()
       const registeredUser = typeof order.userId === 'object' && order.userId !== null ? order.userId : null
-      const bookText = order.items?.map((item) => [
+      const bookText = (order.items ?? []).map((item) => [
         item.product?.name,
         item.product?.author,
         item.product?.category,
@@ -103,8 +115,8 @@ const Orders = () => {
         customerName,
         registeredUser?.name,
         registeredUser?.email,
-        order.address?.phone,
-        order.address?.email,
+        address.phone,
+        address.email,
         order._id,
         bookText,
       ].filter(Boolean).join(' ').toLowerCase()
@@ -220,17 +232,25 @@ const Orders = () => {
         <div key={order._id} className='bg-white p-2 mt-3 rounded-lg'>
           {/* BOOK LIST */}
           <div className='flex flex-col lg:flex-row gap-4 mb-3'>
-            {order.items.map((item,index)=>(
+            {(order.items ?? []).map((item,index)=>{
+              const product = item.product
+              const image = product?.image?.[0]
+
+              return (
               <div key={index} className='flex gap-x-3'>
                 <div className='flexCenter rounded-lg overflow-hidden'>
-                  <img src={item.product.image[0]} alt="orderImg" className='max-h-20 max-w-32 aspect-square object-contain' />
+                  {image ? (
+                    <img src={image} alt="orderImg" className='max-h-20 max-w-32 aspect-square object-contain' />
+                  ) : (
+                    <div className='flex h-20 w-20 items-center justify-center rounded-lg bg-primary text-xs font-semibold text-gray-500'>No image</div>
+                  )}
                 </div>
                 <div className='w-full block'>
-                  <h5 className='h5 capitalize line-clamp-1'>{item.product.name}</h5>
+                  <h5 className='h5 capitalize line-clamp-1'>{product?.name ?? 'Deleted book'}</h5>
                   <div className='flex flex-wrap gap-3 max-sm:gap-y-1 mt-1'>
                     <div className='flex items-center gap-x-2'>
                       <h5 className='medium-14'>Price:</h5>
-                      <p>{currency}{item.product.offerPrice}</p>
+                      <p>{currency}{product?.offerPrice ?? 0}</p>
                     </div>
                     <div className='flex items-center gap-x-2'>
                       <h5 className='medium-14'>Quantity:</h5>
@@ -239,10 +259,16 @@ const Orders = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* ORDER SUMMARY */}
+          {(() => {
+            const address = order.address ?? fallbackAddress
+            const addressLine = [address.street, address.city, address.state, address.country, address.zipcode].filter(Boolean).join(', ')
+
+            return (
           <div className='flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-t border-gray-300 pt-3'>
             <div className='flex flex-col gap-2'>
               <div className='flex items-center gap-x-2'>
@@ -252,16 +278,16 @@ const Orders = () => {
               <div className='flex gap-4'>
                 <div className='flex items-center gap-x-2'>
                   <h5 className='medium-14'>Customer:</h5>
-                  <p className='text-xs'>{order.address.firstName} {order.address.lastName}</p>
+                  <p className='text-xs'>{address.firstName} {address.lastName}</p>
                 </div>
                 <div className='flex items-center gap-x-2'>
                   <h5 className='medium-14'>Phone:</h5>
-                  <p className='text-xs'>{order.address.phone}</p>
+                  <p className='text-xs'>{address.phone}</p>
                 </div>
               </div>
               <div className='flex items-center gap-x-2'>
                   <h5 className='medium-14'>Address:</h5>
-                  <p className='text-xs'>{" "} {order.address.street}, {order.address.city},{" "} {order.address.state}, {order.address.country},{" "} {order.address.zipcode}</p>
+                  <p className='text-xs'>{addressLine || 'Address unavailable'}</p>
               </div>
               <div className='flex gap-4'>
                 <div className='flex items-center gap-x-2'>
@@ -299,6 +325,8 @@ const Orders = () => {
              </select>
             </div>
           </div>
+            )
+          })()}
           {order.cancelRequest?.requested && (
             <div className='mt-3 rounded-xl bg-red-50 p-4 ring-1 ring-red-100'>
               <h4 className='bold-15 text-red-700'>Cancellation Requested</h4>
