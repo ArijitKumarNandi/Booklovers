@@ -12,13 +12,25 @@ const taxPercentage = 0.02 // 2% tax charges
 
 const getOrderBookNames = (items = []) => {
     const names = items
-        .map((item) => item.product?.name)
+        .map((item) => item.snapshot?.name || item.product?.name)
         .filter(Boolean)
 
     if(names.length === 0) return "your books"
     if(names.length === 1) return names[0]
     return `${names[0]} and ${names.length - 1} more book${names.length > 2 ? "s" : ""}`
 }
+
+const createOrderItems = (productData = []) => productData.map(({product, quantity}) => ({
+    product: product._id.toString(),
+    quantity,
+    // Keep the purchase-time book details so order history remains readable
+    // even if the catalog entry is later edited or deleted.
+    snapshot: {
+        name: product.name,
+        image: product.image?.[0] || "",
+        offerPrice: product.offerPrice,
+    },
+}))
 
 const getAvailableQuantity = (product) => {
     const quantity = Number(product?.quantity)
@@ -127,6 +139,7 @@ export const placeOrderCOD = async (req,res)=>{
         }
 
         const {subtotal, productData} = validation
+        const orderItems = createOrderItems(productData)
 
         // calculate total amount by adding tax and delivery charges
         const taxAmount = subtotal * taxPercentage
@@ -136,7 +149,7 @@ export const placeOrderCOD = async (req,res)=>{
 
         const order = await Order.create({
             userId,
-            items,
+            items: orderItems,
             amount:totalAmount,
             address,
             paymentMethod: "COD"
@@ -177,6 +190,7 @@ export const placeOrderStripe = async (req,res)=>{
         }
 
         const {subtotal, productData} = validation
+        const orderItems = createOrderItems(productData)
 
         // calculate total amount by adding tax and delivery charges
         const taxAmount = subtotal * taxPercentage
@@ -184,7 +198,7 @@ export const placeOrderStripe = async (req,res)=>{
 
         const order = await Order.create({
             userId,
-            items,
+            items: orderItems,
             amount:totalAmount,
             address,
             paymentMethod: "stripe"

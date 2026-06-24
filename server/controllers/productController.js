@@ -556,6 +556,14 @@ export const deleteProduct = async (req,res)=>{
             return res.json({success:false, message:"Product not found"})
         }
 
+        // Remove the deleted product from every saved cart. Without this,
+        // cartData can retain an ID that no longer exists in the product list.
+        const cartItemPath = `cartData.${productId}`
+        await User.updateMany(
+            {[cartItemPath]: {$exists:true}},
+            {$unset: {[cartItemPath]: ""}}
+        )
+
         res.json({success:true, message:"Product deleted"})
     } catch (error) {
         console.log(error.message)

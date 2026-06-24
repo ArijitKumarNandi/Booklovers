@@ -96,17 +96,27 @@ const MyOrders = () => {
         <div key={order._id} className='bg-primary p-4 mt-4 rounded-2xl shadow-sm ring-1 ring-slate-900/5'>
           {/* BOOK LIST */}
           <div className='grid gap-4 mb-4 md:grid-cols-2 xl:grid-cols-3'>
-            {order.items.map((item,index)=>(
+            {order.items.map((item,index)=>{
+              const product = item.product
+              const image = item.snapshot?.image || product?.image?.[0]
+              const name = item.snapshot?.name || product?.name || 'Book unavailable'
+              const price = item.snapshot?.offerPrice ?? product?.offerPrice ?? 0
+
+              return (
               <div key={index} className='flex gap-x-3 rounded-xl bg-white p-3 ring-1 ring-slate-900/5'>
                 <div className='flexCenter rounded-lg overflow-hidden bg-primary'>
-                  <img src={item.product.image[0]} alt="orderImg" className='h-20 w-16 object-contain' />
+                  {image ? (
+                    <img src={image} alt={name} className='h-20 w-16 object-contain' />
+                  ) : (
+                    <div className='flex h-20 w-16 items-center justify-center text-xs font-semibold text-gray-500'>No image</div>
+                  )}
                 </div>
                 <div className='w-full block'>
-                  <h5 className='h5 capitalize line-clamp-1'>{item.product.name}</h5>
+                  <h5 className='h5 capitalize line-clamp-1'>{name}</h5>
                   <div className='flex flex-wrap gap-3 max-sm:gap-y-1 mt-1'>
                     <div className='flex items-center gap-x-2'>
                       <h5 className='medium-14'>Price:</h5>
-                      <p>{currency}{item.product.offerPrice}</p>
+                      <p>{currency}{price}</p>
                     </div>
                     <div className='flex items-center gap-x-2'>
                       <h5 className='medium-14'>Quantity:</h5>
@@ -115,7 +125,8 @@ const MyOrders = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* ORDER SUMMARY */}

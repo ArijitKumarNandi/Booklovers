@@ -5,6 +5,11 @@ const orderSchema = mongoose.Schema({
     items: [{
         product: {type:String, required:true, ref:'product'},
         quantity: {type:Number, required:true},
+        snapshot: {
+            name: {type:String, default:""},
+            image: {type:String, default:""},
+            offerPrice: {type:Number, default:0},
+        },
     }],
     amount: {type:Number, required:true},
     address: {type:String, required:true, ref:'address'},

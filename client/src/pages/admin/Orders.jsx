@@ -104,7 +104,7 @@ const Orders = () => {
       const customerName = `${address.firstName ?? ''} ${address.lastName ?? ''}`.trim()
       const registeredUser = typeof order.userId === 'object' && order.userId !== null ? order.userId : null
       const bookText = (order.items ?? []).map((item) => [
-        item.product?.name,
+        item.snapshot?.name ?? item.product?.name,
         item.product?.author,
         item.product?.category,
         ...(item.product?.genres ?? []),
@@ -234,7 +234,9 @@ const Orders = () => {
           <div className='flex flex-col lg:flex-row gap-4 mb-3'>
             {(order.items ?? []).map((item,index)=>{
               const product = item.product
-              const image = product?.image?.[0]
+              const image = item.snapshot?.image || product?.image?.[0]
+              const name = item.snapshot?.name || product?.name || 'Book unavailable'
+              const price = item.snapshot?.offerPrice ?? product?.offerPrice ?? 0
 
               return (
               <div key={index} className='flex gap-x-3'>
@@ -246,11 +248,11 @@ const Orders = () => {
                   )}
                 </div>
                 <div className='w-full block'>
-                  <h5 className='h5 capitalize line-clamp-1'>{product?.name ?? 'Deleted book'}</h5>
+                  <h5 className='h5 capitalize line-clamp-1'>{name}</h5>
                   <div className='flex flex-wrap gap-3 max-sm:gap-y-1 mt-1'>
                     <div className='flex items-center gap-x-2'>
                       <h5 className='medium-14'>Price:</h5>
-                      <p>{currency}{product?.offerPrice ?? 0}</p>
+                      <p>{currency}{price}</p>
                     </div>
                     <div className='flex items-center gap-x-2'>
                       <h5 className='medium-14'>Quantity:</h5>

@@ -84,6 +84,31 @@ export const isAuth = async (req,res)=>{
     try {
         const {userId} = req
         const user = await User.findById(userId).select("-password")
+
+        if(!user){
+            return res.json({success:false, message:"User not found"})
+        }
+
+        // A product can be removed after it has been added to a cart. Remove
+        // those orphaned entries before returning the cart to the client so the
+        // cart badge, item list, and totals always describe the same items.
+        const cartData = user.cartData || {}
+        const cartItemIds = Object.keys(cartData).filter((itemId) =>
+            /^[a-f\d]{24}$/i.test(itemId) && Number(cartData[itemId]) > 0
+        )
+        const products = await Product.find({_id: {$in: cartItemIds}}).select("_id")
+        const availableProductIds = new Set(products.map((product) => product._id.toString()))
+        const cleanedCartData = Object.fromEntries(
+            Object.entries(cartData).filter(([itemId, quantity]) =>
+                availableProductIds.has(itemId) && Number(quantity) > 0
+            )
+        )
+
+        if(JSON.stringify(cartData) !== JSON.stringify(cleanedCartData)){
+            user.cartData = cleanedCartData
+            await user.save()
+        }
+
         return res.json({success:true, user})
     } catch (error) {
         console.log(error.message)
